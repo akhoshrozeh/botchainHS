@@ -1,14 +1,10 @@
 pragma solidity 0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";  
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";  
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "./ERC721Tradable.sol"; 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 
-contract NikyBotzPictureDay is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable  {
+contract NikyBotzPictureDay is ERC721Tradable  {
 
     string public NBPC_PROVENANCE = "";
 
@@ -40,8 +36,8 @@ contract NikyBotzPictureDay is ERC721, ERC721Enumerable, ERC721URIStorage, Ownab
     // Event that let's public know when provenance hash was set; added trust
     event ProvenanceHashSet(string provHash);
 
-    constructor(string memory name, string memory symbol, string memory customBaseURI, uint256 saleStart) 
-    ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol, address proxyRegAddress, string memory customBaseURI) 
+    ERC721Tradable(name, symbol, proxyRegAddress) {
         _customBaseURI = customBaseURI;
     }
     
@@ -50,13 +46,11 @@ contract NikyBotzPictureDay is ERC721, ERC721Enumerable, ERC721URIStorage, Ownab
         NBPC_PROVENANCE = provenanceHash;
     }
 
-    function setBaseURI(string memory newBaseURI) public onlyOwner {
+    function setBaseTokenURI(string memory newBaseURI) public onlyOwner {
         _customBaseURI = newBaseURI;
     }
 
-    // Overriding function to return correct baseURI for the collection
-     function _baseURI() internal view virtual override returns (string memory) {
-        // Change to this to the actual baseURI later
+     function baseTokenURI() public view override (ERC721Tradable) returns (string memory) {
         return _customBaseURI;
     }
 
@@ -98,7 +92,6 @@ contract NikyBotzPictureDay is ERC721, ERC721Enumerable, ERC721URIStorage, Ownab
             uint mintIndex = totalSupply();
             if (totalSupply() < MAX_SCHOOLBOTZ) {
                 _safeMint(msg.sender, mintIndex);
-                _setTokenURI(mintIndex, "google.com/");
             }
         }
 
@@ -112,32 +105,32 @@ contract NikyBotzPictureDay is ERC721, ERC721Enumerable, ERC721URIStorage, Ownab
     // ! OVERRIDES
     // The following functions are overrides required by Solidity.
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
+    // function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+    //     internal
+    //     override(ERC721, ERC721Enumerable)
+    // {
+    //     super._beforeTokenTransfer(from, to, tokenId);
+    // }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
-    }
+    // function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+    //     super._burn(tokenId);
+    // }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
-    }
+    // function tokenURI(uint256 tokenId)
+    //     public
+    //     view
+    //     override(ERC721, ERC721URIStorage)
+    //     returns (string memory)
+    // {
+    //     return super.tokenURI(tokenId);
+    // }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
+    // function supportsInterface(bytes4 interfaceId)
+    //     public
+    //     view
+    //     override(ERC721, ERC721Enumerable)
+    //     returns (bool)
+    // {
+    //     return super.supportsInterface(interfaceId);
+    // }
 }
