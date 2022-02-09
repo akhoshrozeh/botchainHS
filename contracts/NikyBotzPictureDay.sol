@@ -6,17 +6,21 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract NikyBotzPictureDay is ERC721Tradable  {
 
-    string public NBPC_PROVENANCE = "";
-
+    
     uint256 public constant SCHOOLBOTZ_PRICE = 0.1 ether; 
 
-    uint256 public constant MAX_SCHOOLBOTZ = 4100;
+    uint256 public constant MAX_PUBLIC_SCHOOLBOTZ = 4000;
 
-    // uint256 public REVEAL_TIMESTAMP;
+    uint256 public constant MAX_RESERVED_SCHOOLBOTZ = 100;
 
-    uint256 public constant MAX_OWNER_MINTS = 100;
+    uint256 public constant MAX_SCHOOLBOTZ = MAX_RESERVED_SCHOOLBOTZ + MAX_PUBLIC_SCHOOLBOTZ;
 
-    uint256 private ownerMintCount = 0;
+    // uint256 private MAX_OWNER_MINTS = 100;
+
+
+    uint256 private currPublicID = 1;
+
+    uint256 private currReserveID = 4001;
 
     // Use Unix Timestamp for exact time
     // * This is currently a placeholder (2/22/22 at 12:00:00 AM)
@@ -28,10 +32,19 @@ contract NikyBotzPictureDay is ERC721Tradable  {
 
     uint256 public constant maxSchoolBoyzPurchase = 100;
 
+    bool private provenanceHashSet = false;
+
+    string public provenanceHash = "";
+
     string private _customBaseURI;
+
+    bytes32 whitelistRoot = "";
+
 
     // Counters.Counter private _tokenIds;
 
+    // modifier publicSaleOn // this checks if sale has started & there any tokens left available to mint for the public
+    // 
 
     // Event that let's public know when provenance hash was set; added trust
     event ProvenanceHashSet(string provHash);
@@ -40,97 +53,108 @@ contract NikyBotzPictureDay is ERC721Tradable  {
     ERC721Tradable(name, symbol, proxyRegAddress) {
         _customBaseURI = customBaseURI;
     }
-    
-    // Set when all tokens have been minted
-    function setProvenanceHash(string memory provenanceHash) public onlyOwner {
-        NBPC_PROVENANCE = provenanceHash;
+
+    modifier presaleIsOpen {
+        require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Whitelist hasn't begun or has ended.");
+        _;
     }
 
-    function setBaseTokenURI(string memory newBaseURI) public onlyOwner {
+    modifier validNumOfTokens(uint8 numberOfTokens) {
+        require(numberOfTokens == 1 || numberOfTokens == 2, "Can only mint 1 or 2 tokens during whitelist exclusive pre-sale.");
+        _;
+    }
+
+    // should also check that there are tokens left to mint
+    modifier publicSaleIsOpen {
+        require(block.timestamp >= PUBLIC_SALE_TIMESTAMP, "Cannot mint until after public sale begins.");
+        _;
+    }
+    
+    // set timestamp check before mint
+    function setProvenanceHash(string memory provHash) external onlyOwner {
+        require(provenanceHashSet == false);
+        provenanceHash = provHash;
+        provenanceHashSet = true;
+    }
+
+    function setBaseTokenURI(string memory newBaseURI) external onlyOwner {
         _customBaseURI = newBaseURI;
     }
 
-     function baseTokenURI() public view override (ERC721Tradable) returns (string memory) {
+    function baseTokenURI() public view override (ERC721Tradable) returns (string memory) {
         return _customBaseURI;
     }
 
-    // Question: Should numberOfTokens <= 2?
-    // Question: Should the public mint function be halted when owner still has mints left and (100 - ownerMintCount) + totalSupply() == 4100?
-    function ownerMintSchoolBotz(uint256 numberOfTokens) external onlyOwner {
-        require(numberOfTokens +ownerMintCount <= MAX_OWNER_MINTS, "Owner can only save up to 100 tokens");
-
-        uint supply = totalSupply();
-        for(uint i = 0; i < numberOfTokens; i++) {
-            _safeMint(msg.sender, supply + i);
-            ownerMintCount += 1;
-        }
-    }
-
-    function getOwnerMintCount() public view returns (uint256) {
-        return ownerMintCount;
+    function setWhitelistRoot(bytes32 _root) external view onlyOwner {
+        whitelistRoot = _root;
     }
 
     
-    function mintFromWhitelist(uint numberOfTokens, bytes32[] memory proof, bytes32 root, bytes32 leaf) external payable {
-        require(numberOfTokens == 1 || numberOfTokens == 2, "Can only mint 1 or 2 tokens during whitelist exclusive pre-sale.");
-        require(MerkleProof.verify(proof, root, leaf) == true, "Address cannot be proved to be a part of whitelist.");
-        require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Whitelist hasn't begun or has ended.");
 
+
+    // reserver tokens [4000, 4100] for owner
+    // add check for tokenid to start at 4001
+    function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external onlyOwner {
+        require(currReserveID <= 4100, "All reserve tokens have been minted.");
+        require(numberOfTokens + currReserveID <= 4101, "You don't have enough reserved tokens left to mint this many.");
+
+        uint256 currReserveIndex = currReserveID;
+        for(uint i = 0; i < numberOfTokens; i++) {
+            _safeMint(_mintTo, currReserveIndex);
+            currReserveIndex = currReserveIndex + 1;
+        }
+        currReserveID = currReserveIndex;
     }
 
-    // Note: Need to check if _safeMint should be overriden to make sure others cannot bypass
-    //      these checks to mint a token
-    function mintSchoolBotz(uint numberOfTokens) external payable {
-        require(block.timestamp >= PUBLIC_SALE_TIMESTAMP, "Cannot mint until after public sale begins.");
-        require(numberOfTokens == 1 || numberOfTokens == 2, "Can only mint 1 or 2 tokens at a time");
-        require(totalSupply() + numberOfTokens <= MAX_SCHOOLBOTZ, "Purchase would exceed max supply of SchoolBotz");
-        require(msg.value / (10 ** 18) >= numberOfTokens * SCHOOLBOTZ_PRICE);
-        // uint256 tokenId = current(_tokenIds);
-        // increment(_tokenIds);
-        
+   
+
+    
+    function mintFromWhitelist(uint numberOfTokens, bytes32[] memory proof) external payable presaleIsOpen validNumOfTokens(numberOfTokens) {
+        require(MerkleProof.verify(proof, getWhitelistRoot(), msg.sender) == true, "Address cannot be proved to be a part of whitelist.");
+        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+
+        uint256 currIndex = currPublicID;
         for(uint i = 0; i < numberOfTokens; i++) {
-            uint mintIndex = totalSupply();
-            if (totalSupply() < MAX_SCHOOLBOTZ) {
-                _safeMint(msg.sender, mintIndex);
+            if (currPublicID <= MAX_PUBLIC_SCHOOLBOTZ) {
+                _safeMint(msg.sender, currIndex);
+                currIndex = currIndex + 1;
             }
         }
 
+        currPublicID = currIndex;
+    }
+
+    function mintSchoolBotz(uint numberOfTokens) external payable validNumOfTokens(numberOfTokens) publicSaleIsOpen {
+        require(numberOfTokens + currPublicID <= MAX_PUBLIC_SCHOOLBOTZ + 1, "Purchase would exceed max supply of SchoolBotz");
+        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+
+        uint256 currIndex = currPublicID;
+        
+        for(uint i = 0; i < numberOfTokens; i++) {
+            if (currPublicID <= MAX_PUBLIC_SCHOOLBOTZ) {
+                _safeMint(msg.sender, currIndex);
+                currIndex = currIndex + 1;
+            }
+        }
+
+        currPublicID = currIndex;
+
     }
 
 
 
+    // * GETTERS
 
+     // returns have reserve tokens have been minted
+    function getReserveMintCount() public view returns (uint256) {
+        return currReserveID - 4001;
+    }
 
+    function getPublicMintCount() public view returns (uint256) {
+        return currPublicID - 1;
+    }
 
-    // ! OVERRIDES
-    // The following functions are overrides required by Solidity.
-
-    // function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-    //     internal
-    //     override(ERC721, ERC721Enumerable)
-    // {
-    //     super._beforeTokenTransfer(from, to, tokenId);
-    // }
-
-    // function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-    //     super._burn(tokenId);
-    // }
-
-    // function tokenURI(uint256 tokenId)
-    //     public
-    //     view
-    //     override(ERC721, ERC721URIStorage)
-    //     returns (string memory)
-    // {
-    //     return super.tokenURI(tokenId);
-    // }
-
-    // function supportsInterface(bytes4 interfaceId)
-    //     public
-    //     view
-    //     override(ERC721, ERC721Enumerable)
-    //     returns (bool)
-    // {
-    //     return super.supportsInterface(interfaceId);
-    // }
+    function getWhitelistRoot() external view returns(bytes32) {
+        return whitelistRoot;
+    }
 }
