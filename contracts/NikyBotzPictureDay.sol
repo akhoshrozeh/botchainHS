@@ -81,18 +81,18 @@ contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, Ac
 
 
     modifier presaleIsOpen {
-        require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Whitelist hasn't begun or has ended.");
+        require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Not open");
         _;
     }
 
     modifier validNumOfTokens(uint8 numberOfTokens) {
-        require(numberOfTokens == 1 || numberOfTokens == 2, "Can only mint 1 or 2 tokens during whitelist exclusive pre-sale.");
+        require(numberOfTokens == 1 || numberOfTokens == 2, "presale token limit");
         _;
     }
 
     // should also check that there are tokens left to mint
     modifier publicSaleIsOpen {
-        require(block.timestamp >= PUBLIC_SALE_TIMESTAMP, "Cannot mint until after public sale begins.");
+        require(block.timestamp >= PUBLIC_SALE_TIMESTAMP, "Not open");
         _;
     }
     
@@ -125,8 +125,8 @@ contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, Ac
     // reserver tokens [4000, 4100] for owner
     // add check for tokenid to start at 4001
     function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external onlyRole(ADMIN_ROLE) {
-        require(currReserveID <= 4100, "All reserve tokens have been minted.");
-        require(numberOfTokens + currReserveID <= 4101, "You don't have enough reserved tokens left to mint this many.");
+        require(currReserveID <= 4100, "All minted");
+        require(numberOfTokens + currReserveID <= 4101, "Token limit");
 
         uint256 currReserveIndex = currReserveID;
         for(uint i = 0; i < numberOfTokens; i++) {
@@ -140,10 +140,10 @@ contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, Ac
 
     // proof should be 'calldata' and not memory ? need to research this.
     function mintFromWhitelist(uint8 numberOfTokens, bytes32[] memory proof) external payable presaleIsOpen validNumOfTokens(numberOfTokens) {
-        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Bad value"); 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(proof, getWhitelistRoot(), leaf) == true, "Address cannot be proved to be a part of whitelist.");
-        require(whitelistClaimed[msg.sender] == false, "Whitelisted address has already claimed tokens");
+        require(MerkleProof.verify(proof, getWhitelistRoot(), leaf) == true, "Bad address");
+        require(whitelistClaimed[msg.sender] == false, "Already claimed");
 
         uint256 currIndex = currPublicID;
         for(uint i = 0; i < numberOfTokens; i++) {
@@ -158,8 +158,8 @@ contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, Ac
     }
 
     function mintSchoolBotz(uint8 numberOfTokens) external payable validNumOfTokens(numberOfTokens) publicSaleIsOpen {
-        require(numberOfTokens + currPublicID <= MAX_PUBLIC_SCHOOLBOTZ + 1, "Purchase would exceed max supply of SchoolBotz");
-        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+        require(numberOfTokens + currPublicID <= MAX_PUBLIC_SCHOOLBOTZ + 1, ">Token limit");
+        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Bad value"); 
 
         uint256 currIndex = currPublicID;
         
