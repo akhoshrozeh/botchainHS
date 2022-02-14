@@ -15,37 +15,40 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, AccessControlUpgradeable, UUPSUpgradeable {
 
     // IMPORTANT: Always add new variables at the bottom of the last declared variable to avoid storage collisions
-    uint256 public constant SCHOOLBOTZ_PRICE = 0.1 ether; 
+    uint256 internal constant SCHOOLBOTZ_PRICE = 0.1 ether; 
 
-    uint256 public constant MAX_PUBLIC_SCHOOLBOTZ = 4000;
+    uint256 internal constant MAX_PUBLIC_SCHOOLBOTZ = 4000;
 
     // Use Unix Timestamp for exact time
     // * This is currently a placeholder (2/22/22 at 12:00:00 AM)
-    uint256 public constant PUBLIC_SALE_TIMESTAMP = 1645747200;
+    uint256 internal constant PUBLIC_SALE_TIMESTAMP = 1645747200;
 
-    uint256 public constant WHITELIST_SALE_TIMESTAMP_BEGIN = 1645747200;
+    uint256 internal constant WHITELIST_SALE_TIMESTAMP_BEGIN = 1645747200;
 
-    uint256 public constant WHITELIST_SALE_TIMESTAMP_END = 1645747200;
+    uint256 internal constant WHITELIST_SALE_TIMESTAMP_END = 1645747200;
 
-    uint256 public constant maxSchoolBoyzPurchase = 100;
+    uint256 internal constant maxSchoolBoyzPurchase = 100;
 
-    bytes32 whitelistRoot;
+    
 
     uint256 private currPublicID;
 
     uint256 private currReserveID;
 
-    // bool private provenanceHashSet;
+   
 
-    // string public provenanceHash;
+    string private provenanceHash;
 
     string private _customBaseURI;
 
     mapping (address => bool) whitelistClaimed;
+    bytes32 whitelistRoot;
 
     // Access Control Roles
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");   // can do all other admin actions
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");   // can withdraw money from contract
+
+     bool private provenanceHashSet;
 
 
 
@@ -73,8 +76,8 @@ contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, Ac
         // global varibles
         currPublicID = 1;
         currReserveID = 4001;
-        // provenanceHashSet = false;
-        // provenanceHash = "";
+        provenanceHashSet = false;
+        provenanceHash = "";
         whitelistRoot = "";
                         
     }
@@ -97,11 +100,11 @@ contract NikyBotzPictureDay is ERC721TradableUpgradeable, OwnableUpgradeable, Ac
     }
     
     // set timestamp check before mint
-    // function setProvenanceHash(string memory provHash) external onlyRole(ADMIN_ROLE) {
-    //     require(provenanceHashSet == false);
-    //     provenanceHash = provHash;
-    //     provenanceHashSet = true;
-    // }
+    function setProvenanceHash(string memory provHash) external onlyRole(ADMIN_ROLE) {
+        require(provenanceHashSet == false);
+        provenanceHash = provHash;
+        provenanceHashSet = true;
+    }
 
     function setBaseTokenURI(string memory newBaseURI) external onlyRole(ADMIN_ROLE) {
         _customBaseURI = newBaseURI;
