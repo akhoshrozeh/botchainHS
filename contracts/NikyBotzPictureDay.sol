@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
 import "./ERC721Tradable.sol"; 
@@ -7,67 +8,68 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
-    // IMPORTANT: Always add new variables at the bottom of the last declared variable to avoid storage collisions
-    uint256 public constant SCHOOLBOTZ_PRICE = 0.1 ether; 
-
-    uint256 public constant MAX_PUBLIC_SCHOOLBOTZ = 4000;
-
-    uint256 public constant MAX_RESERVED_SCHOOLBOTZ = 100;
-
-    uint256 public constant MAX_SCHOOLBOTZ = MAX_RESERVED_SCHOOLBOTZ + MAX_PUBLIC_SCHOOLBOTZ;
-
-    // uint256 private MAX_OWNER_MINTS = 100;
-
-
     uint256 private currPublicID = 1;
 
     uint256 private currReserveID = 4001;
 
     // Use Unix Timestamp for exact time
     // * This is currently a placeholder (2/22/22 at 12:00:00 AM)
-    uint256 public constant PUBLIC_SALE_TIMESTAMP = 1645747200;
+    uint256 public  PUBLIC_SALE_TIMESTAMP = 1645747200;
 
-    uint256 public constant WHITELIST_SALE_TIMESTAMP_BEGIN = 1645747200;
+    uint256 public WHITELIST_SALE_TIMESTAMP_BEGIN = 1645747200;
 
-    uint256 public constant WHITELIST_SALE_TIMESTAMP_END = 1645747200;
+    uint256 public WHITELIST_SALE_TIMESTAMP_END = 1645747500;
+
+    uint256 public REVEAL_TIMESTAMP = 1645747200;
 
     uint256 public constant maxSchoolBoyzPurchase = 100;
 
-    bool private provenanceHashSet = false;
+    bytes32 whitelistRoot = "";
+
+    // Admins can do everything but withdraw
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");   // can do all other admin actions
+
+    // Owner can withdraw. Owner is also an Admin.
+    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");   // can withdraw money from contract
 
     string public provenanceHash = "";
 
-    string private _customBaseURI;
+    string private _customBaseURI = "";
 
-    bytes32 whitelistRoot = "";
+    bool private _provenanceHashSet = false;
+
+    bool private _saleIsOn = false;
 
     mapping (address => bool) whitelistClaimed;
 
-    // Access Control Roles
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");   // can do all other admin actions
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");   // can withdraw money from contract
-
-
-
-    // modifier publicSaleOn // this checks if sale has started & there any tokens left available to mint for the public
-    // 
-
-    // Event that let's public know when provenance hash was set; added trust
     event ProvenanceHashSet(string provHash);
 
-    constructor(string memory name, string memory symbol, address proxyRegAddress, string memory customBaseURI,
-        address admin1, address admin2, address admin3) 
-    ERC721Tradable(name, symbol, proxyRegAddress) {
+
+    constructor(
+        string memory name, 
+        string memory symbol, 
+        address proxyRegAddress, 
+        string memory customBaseURI,
+        address admin1, 
+        address admin2, 
+        address admin3
+        ) ERC721Tradable(name, symbol, proxyRegAddress) {
         _customBaseURI = customBaseURI;
         _setupRole(ADMIN_ROLE, admin1);
         _setupRole(ADMIN_ROLE, admin2);
         _setupRole(ADMIN_ROLE, admin3);
+        _setupRole(ADMIN_ROLE, msg.sender);
         _setupRole(OWNER_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     modifier presaleIsOpen {
         require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Whitelist hasn't begun or has ended.");
+        _;
+    }
+
+    modifier saleOn {
+        require(_saleIsOn == true, "Sale off");
         _;
     }
 
@@ -82,11 +84,18 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         _;
     }
     
-    // set timestamp check before mint
+
+
+
+    // Can only be set once!
     function setProvenanceHash(string memory provHash) external onlyRole(ADMIN_ROLE) {
-        require(provenanceHashSet == false);
+        require(_provenanceHashSet == false, "Already set");
         provenanceHash = provHash;
-        provenanceHashSet = true;
+        _provenanceHashSet = true;
+    }
+
+    function flipSaleState() public onlyRole(ADMIN_ROLE) {
+        _saleIsOn = !_saleIsOn;
     }
 
     function setBaseTokenURI(string memory newBaseURI) external onlyRole(ADMIN_ROLE) {
@@ -105,6 +114,17 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         whitelistClaimed[_address] = false;
     }
 
+    // UNIX epoch time 
+    function setRevealTS(uint256 ts) external onlyRole(ADMIN_ROLE) {
+        REVEAL_TIMESTAMP = ts;
+    }
+    function setWhitelistTS(uint256 tsBegin, uint256 tsEnd) external onlyRole(ADMIN_ROLE) {
+        WHITELIST_SALE_TIMESTAMP_BEGIN = tsBegin;
+        WHITELIST_SALE_TIMESTAMP_END = tsEnd;
+    }
+    function setPublicSaleTS(uint256 ts) external onlyRole(ADMIN_ROLE) {
+        PUBLIC_SALE_TIMESTAMP = ts;
+    }
     
 
 
@@ -125,15 +145,15 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
    
 
     // proof should be 'calldata' and not memory ? need to research this.
-    function mintFromWhitelist(uint8 numberOfTokens, bytes32[] memory proof) external payable presaleIsOpen validNumOfTokens(numberOfTokens) {
+    function mintFromWhitelist(uint8 numberOfTokens, bytes32[] memory proof) external payable presaleIsOpen saleOn validNumOfTokens(numberOfTokens) {
         require(whitelistClaimed[msg.sender] == false, "Whitelisted address has already claimed tokens");
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(MerkleProof.verify(proof, getWhitelistRoot(), leaf) == true, "Address cannot be proved to be a part of whitelist.");
-        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+        require(0.1 ether * numberOfTokens >= msg.value, "Invalid ether value sent."); 
 
         uint256 currIndex = currPublicID;
         for(uint i = 0; i < numberOfTokens; i++) {
-            if (currPublicID <= MAX_PUBLIC_SCHOOLBOTZ) {
+            if (currPublicID <= 4000) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -143,14 +163,14 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         whitelistClaimed[msg.sender] = true;
     }
 
-    function mintSchoolBotz(uint8 numberOfTokens) external payable validNumOfTokens(numberOfTokens) publicSaleIsOpen {
-        require(numberOfTokens + currPublicID <= MAX_PUBLIC_SCHOOLBOTZ + 1, "Purchase would exceed max supply of SchoolBotz");
-        require(SCHOOLBOTZ_PRICE * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+    function mintSchoolBotz(uint8 numberOfTokens) external payable saleOn validNumOfTokens(numberOfTokens) publicSaleIsOpen {
+        require(numberOfTokens + currPublicID <= 4000 + 1, "Purchase would exceed max supply of SchoolBotz");
+        require(0.1 ether * numberOfTokens >= msg.value, "Invalid ether value sent."); 
 
         uint256 currIndex = currPublicID;
         
         for(uint i = 0; i < numberOfTokens; i++) {
-            if (currPublicID <= MAX_PUBLIC_SCHOOLBOTZ) {
+            if (currPublicID <= 4000) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
