@@ -14,7 +14,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     // Use Unix Timestamp for exact time
     // * This is currently a placeholder (2/22/22 at 12:00:00 AM)
-    uint256 public  PUBLIC_SALE_TIMESTAMP = 1645747200;
+    // uint256 public PUBLIC_SALE_TIMESTAMP = 1645747200;
 
     uint256 public WHITELIST_SALE_TIMESTAMP_BEGIN = 1645747200;
 
@@ -27,10 +27,10 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     bytes32 whitelistRoot = "";
 
     // Admins can do everything but withdraw
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");   // can do all other admin actions
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");   
 
     // Owner can withdraw. Owner is also an Admin.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");   // can withdraw money from contract
+    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");   
 
     string public provenanceHash = "";
 
@@ -38,9 +38,10 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     bool private _provenanceHashSet = false;
 
+    // getter?
     bool private _saleIsOn = false;
 
-    mapping (address => bool) whitelistClaimed;
+    mapping(address => uint8) private hasMinted;
 
     event ProvenanceHashSet(string provHash);
 
@@ -63,8 +64,9 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    
     modifier presaleIsOpen {
-        require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Whitelist hasn't begun or has ended.");
+        require(block.timestamp >= WHITELIST_SALE_TIMESTAMP_BEGIN && block.timestamp <= WHITELIST_SALE_TIMESTAMP_END, "Presale Off");
         _;
     }
 
@@ -74,13 +76,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     }
 
     modifier validNumOfTokens(uint8 numberOfTokens) {
-        require(numberOfTokens == 1 || numberOfTokens == 2, "Can only mint 1 or 2 tokens during whitelist exclusive pre-sale.");
-        _;
-    }
-
-    // should also check that there are tokens left to mint
-    modifier publicSaleIsOpen {
-        require(block.timestamp >= PUBLIC_SALE_TIMESTAMP, "Cannot mint until after public sale begins.");
+        require(numberOfTokens == 1 || numberOfTokens == 2, "Invalid no. of tokens");
         _;
     }
     
@@ -92,6 +88,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         require(_provenanceHashSet == false, "Already set");
         provenanceHash = provHash;
         _provenanceHashSet = true;
+        emit ProvenanceHashSet(provenanceHash);
     }
 
     function flipSaleState() public onlyRole(ADMIN_ROLE) {
@@ -110,9 +107,6 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         whitelistRoot = _root;
     }
 
-    function setWhitelist(address _address) external onlyRole(ADMIN_ROLE) {
-        whitelistClaimed[_address] = false;
-    }
 
     // UNIX epoch time 
     function setRevealTS(uint256 ts) external onlyRole(ADMIN_ROLE) {
@@ -122,17 +116,14 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         WHITELIST_SALE_TIMESTAMP_BEGIN = tsBegin;
         WHITELIST_SALE_TIMESTAMP_END = tsEnd;
     }
-    function setPublicSaleTS(uint256 ts) external onlyRole(ADMIN_ROLE) {
-        PUBLIC_SALE_TIMESTAMP = ts;
-    }
-    
+  
 
 
     // reserver tokens [4000, 4100] for owner
     // add check for tokenid to start at 4001
-    function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external onlyRole(ADMIN_ROLE) {
-        require(currReserveID <= 4100, "All reserve tokens have been minted.");
-        require(numberOfTokens + currReserveID <= 4101, "You don't have enough reserved tokens left to mint this many.");
+    function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external saleOn onlyRole(ADMIN_ROLE) {
+        require(currReserveID <= 4100, "All reserves minted");
+        require(numberOfTokens + currReserveID <= 4101, "Over reserve limit");
 
         uint256 currReserveIndex = currReserveID;
         for(uint i = 0; i < numberOfTokens; i++) {
@@ -144,12 +135,11 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
    
 
-    // proof should be 'calldata' and not memory ? need to research this.
-    function mintFromWhitelist(uint8 numberOfTokens, bytes32[] memory proof) external payable presaleIsOpen saleOn validNumOfTokens(numberOfTokens) {
-        require(whitelistClaimed[msg.sender] == false, "Whitelisted address has already claimed tokens");
+    function mintFromWhitelist(uint8 numberOfTokens, bytes32[] memory proof) external payable saleOn presaleIsOpen validNumOfTokens(numberOfTokens) {
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(proof, getWhitelistRoot(), leaf) == true, "Address cannot be proved to be a part of whitelist.");
-        require(0.1 ether * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+        require(MerkleProof.verify(proof, getWhitelistRoot(), leaf) == true, "Invalid address");
+        require(0.1 ether * numberOfTokens <= msg.value, "Invalid ether value sent."); 
+        require(hasMinted[msg.sender] + numberOfTokens <= 2, "Whitelist mint limit"); 
 
         uint256 currIndex = currPublicID;
         for(uint i = 0; i < numberOfTokens; i++) {
@@ -160,12 +150,12 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         }
 
         currPublicID = currIndex;
-        whitelistClaimed[msg.sender] = true;
+        hasMinted[msg.sender] += numberOfTokens;
     }
 
-    function mintSchoolBotz(uint8 numberOfTokens) external payable saleOn validNumOfTokens(numberOfTokens) publicSaleIsOpen {
-        require(numberOfTokens + currPublicID <= 4000 + 1, "Purchase would exceed max supply of SchoolBotz");
-        require(0.1 ether * numberOfTokens >= msg.value, "Invalid ether value sent."); 
+    function mintSchoolBotz(uint8 numberOfTokens) external payable saleOn validNumOfTokens(numberOfTokens) {
+        require(numberOfTokens + currPublicID <= 4000 + 1, "Over token limit.");
+        require(0.1 ether * numberOfTokens <= msg.value, "Invalid msg.value"); 
 
         uint256 currIndex = currPublicID;
         
@@ -181,16 +171,19 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     }
 
     // address.transfer i dont think is the best way to transfer funds anymore... need to check if it needs to be updated
-     function transferBalanceToOwner() onlyRole(OWNER_ROLE) public {
+     function withdrawFunds() onlyRole(OWNER_ROLE) public {
         address payable wallet = payable(owner()); 
-        wallet.transfer(address(this).balance); 
+        // wallet.transfer(address(this).balance); 
+        (bool sent, bytes memory data) = wallet.call{value: address(this).balance}("");
+        require(sent, "Failed to send Ether");
     }
 
+    // function calcRoot(bytes32[] memory proof, bytes32 leaf) public pure returns (bytes32) {
+    //     return MerkleProof.processProof(proof, leaf);
+    // }
 
 
-    // * GETTERS
-
-     // returns have reserve tokens have been minted
+    
     function getReserveMintCount() public view returns (uint256) {
         return currReserveID - 4001;
     }

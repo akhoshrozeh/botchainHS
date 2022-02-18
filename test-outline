@@ -1,0 +1,65 @@
+Initial State:
+    x- check name
+    x- check symbol
+    x- check owner
+    x- check admin roles are set
+
+Provenance Hash:
+    x- check initially empty string
+    x- can only be set once
+    x- can only be set by admin
+
+Timestamp Validation:   
+    x- all can only be set by admin
+    - whitelistTS
+        - mintfromWhitelist() can only be called during then
+    - publicSaleTS
+        - mintSchoolBotz can only be minted after that
+    x- RevealTS
+        - can only be set by admin
+
+BaseURI:
+    x- can only be set by admin
+
+Whitelist Minting:
+    x- mint limit of 2
+    - token id correctly updated
+    - token values are [1,4000]
+        - actually theoretical max should be [1,3000] since only 1500 whitelist spots
+    x- correct ether is being sent
+    x- only admin can update whitelist root
+    x- given a bytes32[] proof, verify if msg.sender is a part of the merkle tree
+
+Reserve Minting:
+    x- only admins can mint reserves
+    x- can only mint 100 tokens MAXIMUM
+    x- tokenIDs are [4001, 4100]
+
+Public Minting:
+    x- can only mint <= 2 per call
+    x- public sale must be On
+    - token values are [1,4000]
+        - Note: this takes a very long time to run; implement this later once tests are broken into different modules
+    x- correct ether is being sent
+    x- contract balance is updated with each txn
+
+Transfer of tokens:
+    - test if accounts can successfully transfer tokens to one another
+    
+Withdraw contract balance:
+    - only owner can withdraw
+        - Question for Johann: Should the owner be able to send funds to other accounts (as an argument) or simply just transfer to msg.sender (own EOA)
+
+Access Control:
+    - admin roles can only be granted by the owner
+    - admins cant change any other roles
+    - owner can revoke admins from admin role
+
+Public Sale:
+    - minting is stopped when sale is OFF
+    - only admin can flip the sale stated
+
+Other:
+    - check all tokenURIS are baseTokenURI + tokenID
+    - changing baseuri changes baseuri for already minted tokens
+    - can only mint during saleOn
