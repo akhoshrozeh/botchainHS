@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.10;
+pragma solidity ^0.8.10;
 
 import "./ERC721Tradable.sol"; 
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -10,12 +10,10 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     uint256 private currPublicID = 1;
 
-    uint256 private currReserveID = 4001;
+    uint256 private currReserveID = 5901;
 
     // Use Unix Timestamp for exact time
     // * This is currently a placeholder (2/22/22 at 12:00:00 AM)
-    // uint256 public PUBLIC_SALE_TIMESTAMP = 1645747200;
-
     uint256 public WHITELIST_SALE_TIMESTAMP_BEGIN = 1645747200;
 
     uint256 public WHITELIST_SALE_TIMESTAMP_END = 1645747500;
@@ -62,6 +60,8 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setupRole(OWNER_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setRoleAdmin(ADMIN_ROLE, OWNER_ROLE);
+        _setRoleAdmin(OWNER_ROLE, OWNER_ROLE);
     }
 
     
@@ -122,8 +122,8 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     // reserver tokens [4000, 4100] for owner
     // add check for tokenid to start at 4001
     function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external saleOn onlyRole(ADMIN_ROLE) {
-        require(currReserveID <= 4100, "All reserves minted");
-        require(numberOfTokens + currReserveID <= 4101, "Over reserve limit");
+        require(currReserveID <= 6000, "All reserves minted");
+        require(numberOfTokens + currReserveID <= 6001, "Over reserve limit");
 
         uint256 currReserveIndex = currReserveID;
         for(uint i = 0; i < numberOfTokens; i++) {
@@ -143,7 +143,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
         uint256 currIndex = currPublicID;
         for(uint i = 0; i < numberOfTokens; i++) {
-            if (currPublicID <= 4000) {
+            if (currPublicID <= 5900) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -154,13 +154,13 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     }
 
     function mintSchoolBotz(uint8 numberOfTokens) external payable saleOn validNumOfTokens(numberOfTokens) {
-        require(numberOfTokens + currPublicID <= 4000 + 1, "Over token limit.");
+        require(numberOfTokens + currPublicID <= 5901, "Over token limit.");
         require(0.1 ether * numberOfTokens <= msg.value, "Invalid msg.value"); 
 
         uint256 currIndex = currPublicID;
         
         for(uint i = 0; i < numberOfTokens; i++) {
-            if (currPublicID <= 4000) {
+            if (currPublicID <= 5900) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -181,11 +181,9 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     // function calcRoot(bytes32[] memory proof, bytes32 leaf) public pure returns (bytes32) {
     //     return MerkleProof.processProof(proof, leaf);
     // }
-
-
     
     function getReserveMintCount() public view returns (uint256) {
-        return currReserveID - 4001;
+        return currReserveID - 5901;
     }
 
     function getPublicMintCount() public view returns (uint256) {
