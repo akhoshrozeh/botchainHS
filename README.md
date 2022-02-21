@@ -15,4 +15,5 @@ npx hardhat help
 ```
 
 # Test coverage
-Run `hh coverage --testfiles "test/*"` in the the home directory
+1. Run `hh coverage --testfiles "test/*"` in the the home directory
+2. Open `index.html` inside `coverage/` that is created from the test coverage
