@@ -13,15 +13,15 @@ describe('Initial State', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
         this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
-                this.accounts[1].address);
+            this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
         
     });
     
     it('Correct Name, Symbol, Owner', async function () {
-        assert(await this.botz.name() === 'Botz');
-        assert(await this.botz.symbol() === 'BTZ');
-        assert(await this.botz.owner() === this.accounts[0].address);
+        expect(await this.botz.name()).to.equal("Botz");
+        expect(await this.botz.symbol()).to.equal("BTZ");
+        expect(await this.botz.owner()).to.equal(this.accounts[0].address);
     })
 
     it('Roles and their admins are correct', async function () {
@@ -32,12 +32,12 @@ describe('Initial State', async function () {
 
         // Multi-sig account (accounts[0]) is the only OWNER
         // It is also a SYSADMIN and MANAGER
-        assert(await this.botz.hasRole(OWNER_HASH, this.accounts[0].address) === true);
-        assert(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[0].address) === true);
-        assert(await this.botz.hasRole(MANAGER_HASH, this.accounts[0].address) === true);
+        expect(await this.botz.hasRole(OWNER_HASH, this.accounts[0].address)).to.equal(true);
+        expect(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[0].address)).to.equal(true);
+        expect(await this.botz.hasRole(MANAGER_HASH, this.accounts[0].address)).to.equal(true);
         
-        assert(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[1].address) === true);
-        assert(await this.botz.hasRole(MANAGER_HASH, this.accounts[1].address) === true);
+        expect(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[1].address)).to.equal(true);
+        expect(await this.botz.hasRole(MANAGER_HASH, this.accounts[1].address)).to.equal(true);
 
         //
         expect(await this.botz.getRoleAdmin(OWNER_HASH)).to.equal(OWNER_HASH);
@@ -46,17 +46,17 @@ describe('Initial State', async function () {
 
 
 
-        assert(await this.botz.hasRole(OWNER_HASH, this.accounts[1].address) === false);
-        assert(await this.botz.hasRole(OWNER_HASH, this.accounts[2].address) === false);
-        assert(await this.botz.hasRole(OWNER_HASH, this.accounts[3].address) === false);
+        expect(await this.botz.hasRole(OWNER_HASH, this.accounts[1].address)).to.equal(false);
+        expect(await this.botz.hasRole(OWNER_HASH, this.accounts[2].address)).to.equal(false);
+        expect(await this.botz.hasRole(OWNER_HASH, this.accounts[3].address)).to.equal(false);
 
-        assert(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[2].address) === false);
-        assert(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[3].address) === false);
-        assert(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[4].address) === false);
+        expect(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[2].address)).to.equal(false);
+        expect(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[3].address)).to.equal(false);
+        expect(await this.botz.hasRole(SYSADMIN_HASH, this.accounts[4].address)).to.equal(false);
 
-        assert(await this.botz.hasRole(MANAGER_HASH, this.accounts[2].address) === false);
-        assert(await this.botz.hasRole(MANAGER_HASH, this.accounts[3].address) === false);
-        assert(await this.botz.hasRole(MANAGER_HASH, this.accounts[4].address) === false);
+        expect(await this.botz.hasRole(MANAGER_HASH, this.accounts[2].address)).to.equal(false);
+        expect(await this.botz.hasRole(MANAGER_HASH, this.accounts[3].address)).to.equal(false);
+        expect(await this.botz.hasRole(MANAGER_HASH, this.accounts[4].address)).to.equal(false);
 
     })
 });

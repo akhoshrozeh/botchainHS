@@ -24,11 +24,11 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     bytes32 whitelistRoot = "";
 
-    // Admins can do everything but withdraw
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");   
+    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE"); 
 
-    // Owner can withdraw. Owner is also an Admin.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");   
+    bytes32 public constant SYSADMIN_ROLE = keccak256("SYSADMIN_ROLE");
+
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     string public provenanceHash = "";
 
@@ -49,19 +49,25 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         string memory symbol, 
         address proxyRegAddress, 
         string memory customBaseURI,
-        address admin1, 
-        address admin2, 
-        address admin3
+        address multisig, 
+        address sysadmin
         ) ERC721Tradable(name, symbol, proxyRegAddress) {
         _customBaseURI = customBaseURI;
-        _setupRole(ADMIN_ROLE, admin1);
-        _setupRole(ADMIN_ROLE, admin2);
-        _setupRole(ADMIN_ROLE, admin3);
-        _setupRole(ADMIN_ROLE, msg.sender);
-        _setupRole(OWNER_ROLE, msg.sender);
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setRoleAdmin(ADMIN_ROLE, OWNER_ROLE);
+        
+        _setupRole(OWNER_ROLE, multisig);
+
+        _setupRole(SYSADMIN_ROLE, multisig);
+        _setupRole(SYSADMIN_ROLE, sysadmin);
+
+        _setupRole(MANAGER_ROLE, multisig);
+        _setupRole(MANAGER_ROLE, sysadmin);
+
         _setRoleAdmin(OWNER_ROLE, OWNER_ROLE);
+        _setRoleAdmin(SYSADMIN_ROLE, SYSADMIN_ROLE);
+        _setRoleAdmin(MANAGER_ROLE, SYSADMIN_ROLE);
+
+        // We don't want the deployer to own the contract
+        transferOwnership(multisig);
     }
 
     
@@ -84,18 +90,18 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
 
     // Can only be set once!
-    function setProvenanceHash(string memory provHash) external onlyRole(ADMIN_ROLE) {
+    function setProvenanceHash(string memory provHash) external onlyRole(MANAGER_ROLE) {
         require(_provenanceHashSet == false, "Already set");
         provenanceHash = provHash;
         _provenanceHashSet = true;
         emit ProvenanceHashSet(provenanceHash);
     }
 
-    function flipSaleState() public onlyRole(ADMIN_ROLE) {
+    function flipSaleState() public onlyRole(MANAGER_ROLE) {
         _saleIsOn = !_saleIsOn;
     }
 
-    function setBaseTokenURI(string memory newBaseURI) external onlyRole(ADMIN_ROLE) {
+    function setBaseTokenURI(string memory newBaseURI) external onlyRole(MANAGER_ROLE) {
         _customBaseURI = newBaseURI;
     }
 
@@ -103,16 +109,16 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         return _customBaseURI;
     }
 
-    function setWhitelistRoot(bytes32 _root) external onlyRole(ADMIN_ROLE) {
+    function setWhitelistRoot(bytes32 _root) external onlyRole(MANAGER_ROLE) {
         whitelistRoot = _root;
     }
 
 
     // UNIX epoch time 
-    function setRevealTS(uint256 ts) external onlyRole(ADMIN_ROLE) {
+    function setRevealTS(uint256 ts) external onlyRole(MANAGER_ROLE) {
         REVEAL_TIMESTAMP = ts;
     }
-    function setWhitelistTS(uint256 tsBegin, uint256 tsEnd) external onlyRole(ADMIN_ROLE) {
+    function setWhitelistTS(uint256 tsBegin, uint256 tsEnd) external onlyRole(MANAGER_ROLE) {
         WHITELIST_SALE_TIMESTAMP_BEGIN = tsBegin;
         WHITELIST_SALE_TIMESTAMP_END = tsEnd;
     }
@@ -121,7 +127,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     // reserver tokens [4000, 4100] for owner
     // add check for tokenid to start at 4001
-    function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external saleOn onlyRole(ADMIN_ROLE) {
+    function mintReserveSchoolBotz(uint256 numberOfTokens, address _mintTo) external saleOn onlyRole(MANAGER_ROLE) {
         require(currReserveID <= 6000, "All reserves minted");
         require(numberOfTokens + currReserveID <= 6001, "Over reserve limit");
 
@@ -170,7 +176,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     }
 
-    // address.transfer i dont think is the best way to transfer funds anymore... need to check if it needs to be updated
+
      function withdrawFunds() onlyRole(OWNER_ROLE) public {
         address payable wallet = payable(owner()); 
         // wallet.transfer(address(this).balance); 

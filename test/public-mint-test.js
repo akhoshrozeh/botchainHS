@@ -12,23 +12,21 @@ const provider = waffle.provider;
 //     - correct ether is being sent
 //     - max of 4000 tokens can be minted from this function (including whitelist sales)
 
-describe('Public Minting', async function() {
+describe('Public Minting (~2 min)', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
         this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
-                this.accounts[1].address);
+            this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
     });
 
-    // ! needs to send msg.value!
+
     it('Can only mint 1 or 2 at a time', async function () {
-        try {
-            await this.botz.connect(this.accounts[5]).mintSchoolBotz(3);
-        } 
-        catch(e) {  
-            assert(await this.botz.getPublicMintCount() == 0)
-        }
+        await this.botz.connect(this.accounts[0]).flipSaleState();
+        const threeToken = {value: ethers.utils.parseEther("0.3")}
+        await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(3, threeToken)).to.be.revertedWith("Invalid no. of tokens");
+        await this.botz.connect(this.accounts[0]).flipSaleState();
     });
 
     it('Can only mint during saleOn', async function() {
@@ -45,18 +43,18 @@ describe('Public Minting', async function() {
         
         // Buying 1 token with no eth
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1)).to.be.revertedWith("Invalid msg.value");
-        await expect(this.botz.getPublicMintCount() == 0);
+        expect(await this.botz.getPublicMintCount()).to.equal(0);
         
         // Buying tokens with no enough eth
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1, badOneToken)).to.be.revertedWith("Invalid msg.value");
-        await expect(this.botz.getPublicMintCount() == 0);
+        expect(await this.botz.getPublicMintCount()).to.equal(0);
         
         // Buying 1 and 2 tokens
         await this.botz.connect(this.accounts[5]).mintSchoolBotz(1, oneToken);
-        await expect(this.botz.getPublicMintCount() == 1);
+        expect(await this.botz.getPublicMintCount()).to.equal(1);
         
         await this.botz.connect(this.accounts[5]).mintSchoolBotz(2, twoToken);
-        await expect(this.botz.getPublicMintCount() == 3);
+        expect(await this.botz.getPublicMintCount()).to.equal(3);
     });
     
     
@@ -66,7 +64,7 @@ describe('Public Minting', async function() {
         // balance is in wei
         let balance = await provider.getBalance(this.botz.address);
         balance = ethers.utils.formatEther(balance);
-        expect(balance === 0.3);
+        expect(balance).to.equal('0.3');
 
         // mint 100 more
         for(let i = 0; i < 100; i++) {
@@ -75,31 +73,49 @@ describe('Public Minting', async function() {
 
         // verify correct no. of mints
         let totalMints = await this.botz.getPublicMintCount();
-        expect(totalMints === 103);
+        expect(totalMints).to.equal('103');
 
         // verify balance of contract == totalMints * 0.1
         balance = await provider.getBalance(this.botz.address);
         balance = ethers.utils.formatEther(balance);
-        expect(balance === 10.3);
+        expect(balance).to.equal('10.3');
     });
 
-    
-    // it('Cant mint more than 4000', async function () {
+    // // this test takes about 2 minutes!
+    // it('Max minting of 5900 tokens', async function () {
+
+    //     // deploy new contract instance
+    //     this.botz2 = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+    //         this.accounts[0].address, this.accounts[1].address);
+    //      await this.botz2.deployed();
+    //     await this.botz2.connect(this.accounts[1]).flipSaleState();
+
     //     const oneToken = {value: ethers.utils.parseEther("0.1")}
     //     const twoToken = {value: ethers.utils.parseEther("0.2")}
-    //     // We've minted 103 so far, so mint 3897 more
-    //     await this.botz.connect(this.accounts[5]).mintSchoolBotz(1, oneToken);
 
-    //     for(let i = 0; i < 1948; i++) {
-    //         await this.botz.connect(this.accounts[5]).mintSchoolBotz(2, twoToken);
+    //     for(let i = 1; i <= 5900; i+=2) {
+    //         // check tokens dont exist
+    //         await expect(this.botz2.ownerOf(i)).to.be.revertedWith("ERC721: owner query for nonexistent token");
+    //         await expect(this.botz2.ownerOf(i+1)).to.be.revertedWith("ERC721: owner query for nonexistent token");
+
+    //         // mint two tokens
+    //         await this.botz2.connect(this.accounts[10]).mintSchoolBotz(2, twoToken);
+
+    //         // these tokens should now exist
+    //         expect(await this.botz2.ownerOf(i)).to.equal(this.accounts[10].address);
+    //         expect(await this.botz2.ownerOf(i+1)).to.equal(this.accounts[10].address);
+
+    //         expect(await this.botz2.getPublicMintCount()).to.equal(i+1);
     //     }
+        
+    //     // can't mint anymore
+    //     expect(await this.botz2.getPublicMintCount()).to.equal(5900);
+    //     await expect(this.botz2.connect(this.accounts[10]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("Over token limit.")
+    //     await expect(this.botz2.connect(this.accounts[10]).mintSchoolBotz(2, twoToken)).to.be.revertedWith("Over token limit.")
 
-    //     await expect(this.botz.balanceOf(this.accounts[5].address) === 4000);
-    //     await expect(this.botz.getPublicMintCount() == 4000);
-    //     await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1, oneToken).to.be.revertedWith("Purchase would exceed max supply of SchoolBotz"));
 
 
-    // }).timeout(1000000);
+    // }).timeout(10000000);
     
 
 });

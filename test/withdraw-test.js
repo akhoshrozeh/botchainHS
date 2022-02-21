@@ -10,7 +10,7 @@ describe('Withdraw Balances', async function() {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
         this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
-                this.accounts[1].address);
+            this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
         await this.botz.connect(this.accounts[1]).flipSaleState();
     });
@@ -23,9 +23,14 @@ describe('Withdraw Balances', async function() {
         }
 
         // Should be 6 eth in the contract now (30 iterations * 2 tokens * .1 eth)
-        await expect(provider.getBalance(this.botz.address) == 6 * 10 ** 18);
+        let balance = await provider.getBalance(this.botz.address);
+        balance = ethers.utils.formatEther(balance);
+        expect(balance).to.equal('6.0');
 
-        await expect(provider.getBalance(this.accounts[0].address) == 0);
+        
+        // Save owner funds before withdraw
+        let balanceBefore = await provider.getBalance(this.accounts[0].address);
+        balanceBefore = ethers.utils.formatEther(balanceBefore);
         
         // No other accounts can call withdrawFunds()
         for(let i = 1; i <= 19; i++) {
@@ -36,7 +41,11 @@ describe('Withdraw Balances', async function() {
         await this.botz.connect(this.accounts[0]).withdrawFunds();
 
         // Owner account should now have 6 eth
-        await expect(provider.getBalance(this.accounts[0].address) == 6 * 10 ** 18);
+        let balanceAfter = await provider.getBalance(this.accounts[0].address);
+        balanceAfter = ethers.utils.formatEther(balanceAfter);
+        let diff = Math.round(balanceAfter - balanceBefore);
+        expect(diff).to.equal(6);
+
 
 
 

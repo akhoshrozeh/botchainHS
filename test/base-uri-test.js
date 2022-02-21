@@ -10,25 +10,61 @@ describe('Base URI', async function() {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
         this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
-                this.accounts[1].address);
+            this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
+        await this.botz.connect(this.accounts[0]).flipSaleState();
+
+        // accounts[2] is a manager
+        await this.botz.connect(this.accounts[1]).grantRole(keccak256('MANAGER_ROLE'), this.accounts[2].address);
     });
 
-    it('Tests modification with authorization', async function () {
-        assert(await this.botz.baseTokenURI() === "ipfs");
+    it('Only manager can change base URI', async function () {
+        expect(await this.botz.baseTokenURI()).to.equal('ipfs');
 
         // unauthorized changes invalid
-        try {
-            await this.botz.connect(this.accounts[6]).setBaseTokenURI("ipfs://example-dir.com");
-        } catch(e) {
-            console.log("\t5 Unauthorized update to baseTokenURI: revert caught");
-            assert(await this.botz.baseTokenURI() === "ipfs");
+        await expect(this.botz.connect(this.accounts[6]).setBaseTokenURI("ipfs://example-dir.com")).to.be.reverted;
+        await expect(await this.botz.baseTokenURI()).to.equal('ipfs');
+        
+        // manager can set 
+        await this.botz.connect(this.accounts[2]).setBaseTokenURI("ipfs://example-dir.com/");
+        await expect(await this.botz.baseTokenURI()).to.equal('ipfs://example-dir.com/');
+
+    });
+
+    it('Token URIs are baseURI + tokenID', async function () {
+        
+
+        for(let i = 0; i < 20; i++) {
+            let tokenId = i+5901;
+            await this.botz.connect(this.accounts[2]).mintReserveSchoolBotz(1, this.accounts[3].address);
+            await expect(await this.botz.tokenURI(tokenId)).to.equal('ipfs://example-dir.com/'+(tokenId));
         }
+    
+        expect(await this.botz.balanceOf(this.accounts[3].address)).to.equal(20);
+        expect(await this.botz.getReserveMintCount()).to.equal(20);
 
-        await this.botz.connect(this.accounts[1]).setBaseTokenURI("ipfs://example-dir.com");
-        assert(await this.botz.baseTokenURI() === "ipfs://example-dir.com");
+        
+    });
 
-    })
+    it('Changing baseURI changes tokenURI for already minted tokens', async function () {
+        for(let i = 0; i < 20; i++) {
+            let tokenId = i+5901;
+            await expect(await this.botz.tokenURI(tokenId)).to.equal('ipfs://example-dir.com/'+(tokenId));
+        }
+    
+        expect(await this.botz.balanceOf(this.accounts[3].address)).to.equal(20);
+        expect(await this.botz.getReserveMintCount()).to.equal(20);
+        await this.botz.connect(this.accounts[2]).setBaseTokenURI("ipfs://new_base_uri.com/");
+        for(let i = 0; i < 20; i++) {
+            let tokenId = i+5901;
+            await expect(await this.botz.tokenURI(tokenId)).to.equal('ipfs://new_base_uri.com/'+(tokenId));
+        }
+    });
+
+
+
+
+
     
 });
 
