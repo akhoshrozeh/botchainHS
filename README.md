@@ -13,3 +13,6 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
+
+# Test coverage
+Run `hh coverage --testfiles "test/*"` in the the home directory
