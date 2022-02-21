@@ -1,7 +1,7 @@
 project todo
 
 - fuzzing
-- test coverage (line and branch)
+- linter (reformat)
 - NATSPEC comments
 - Optimization of gas/storage
 - walk through with Johann

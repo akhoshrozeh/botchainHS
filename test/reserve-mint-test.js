@@ -39,7 +39,7 @@ describe('Reserve Minting', async function() {
         expect(await this.botz.ownerOf(6000)).to.equal(this.accounts[1].address);
         
         // Try to mint the 101th reserve token
-        await expect(this.botz.connect(this.accounts[1]).mintReserveSchoolBotz(1, this.accounts[1].address)).to.revertedWith("All reserves minted");
+        await expect(this.botz.connect(this.accounts[1]).mintReserveSchoolBotz(1, this.accounts[1].address)).to.revertedWith("Over reserve limit");
         expect(await this.botz.getReserveMintCount()).to.equal(100);
     });
     

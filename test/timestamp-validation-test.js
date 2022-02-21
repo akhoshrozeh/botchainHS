@@ -16,37 +16,37 @@ describe('Timestamp Validation', async function () {
 
     it('Sets reveal timestamp with authorization', async function () {
         // Check IC
-        assert(await this.botz.REVEAL_TIMESTAMP() == '1645747200');
+        assert(await this.botz.revealTS() == '1645747200');
 
-        // Check REVEAL_TIMESTAMP is only set by admins
+        // Check revealTS is only set by admins
         const time = Math.floor(Date.now() / 1000);
         await this.botz.connect(this.accounts[1]).setRevealTS(time);
-        assert(await this.botz.REVEAL_TIMESTAMP() == time);
+        assert(await this.botz.revealTS() == time);
 
-        // Unauthorized modification of REVEAL_TIMESTAMP
+        // Unauthorized modification of revealTS
 
         await expect(this.botz.connect(this.accounts[5]).setRevealTS(time+100)).to.be.reverted;
-        expect(await this.botz.REVEAL_TIMESTAMP()).to.equal(time)
+        expect(await this.botz.revealTS()).to.equal(time)
 
     })
 
     it('Set whitelist timestamps with authorization', async function () {
         // Check IC
-        assert(await this.botz.WHITELIST_SALE_TIMESTAMP_BEGIN() == '1645747200');
-        assert(await this.botz.WHITELIST_SALE_TIMESTAMP_END() == '1645747500');
+        assert(await this.botz.whitelistBeginTS() == '1645747200');
+        assert(await this.botz.whitelistEndTS() == '1645747500');
 
 
 
-        // Check WHITELIST_SALE_TIMESTAMP_BEGIN is only set by admins
+        // Check whitelistBeginTS is only set by admins
         const time = Math.floor(Date.now() / 1000);
         await this.botz.connect(this.accounts[1]).setWhitelistTS(time, time + 100);
         
-        assert(await this.botz.WHITELIST_SALE_TIMESTAMP_BEGIN() == time);
-        assert(await this.botz.WHITELIST_SALE_TIMESTAMP_END() == time + 100);
+        assert(await this.botz.whitelistBeginTS() == time);
+        assert(await this.botz.whitelistEndTS() == time + 100);
 
         await expect(this.botz.connect(this.accounts[7]).setWhitelistTS(time+1000, time + 2000)).to.be.reverted;
-        assert(await this.botz.WHITELIST_SALE_TIMESTAMP_BEGIN() == time);
-        assert(await this.botz.WHITELIST_SALE_TIMESTAMP_END() == time+100);
+        assert(await this.botz.whitelistBeginTS() == time);
+        assert(await this.botz.whitelistEndTS() == time+100);
 
     })
 

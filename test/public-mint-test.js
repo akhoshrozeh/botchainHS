@@ -12,7 +12,7 @@ const provider = waffle.provider;
 //     - correct ether is being sent
 //     - max of 4000 tokens can be minted from this function (including whitelist sales)
 
-describe('Public Minting (~2 min)', async function() {
+describe('Public Minting', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();

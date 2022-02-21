@@ -117,7 +117,7 @@ describe('Whitelist', async function() {
 
         // create a whitelist with all accounts
         let addresses = Array();
-        for(let i = 0; i < this.accounts.length; i++) {
+        for(let i = 0; i < this.accounts.length - 1; i++) {
             addresses.push(this.accounts[i].address);
         }
 
@@ -127,9 +127,10 @@ describe('Whitelist', async function() {
     
         await this.botz2.connect(this.accounts[1]).setWhitelistRoot(rootHash);
 
+
         // mint the rest, and check the token doesnt before minting and does after
         // with 1500 spots and 2 tokens per acc, the whitelist minting will only ever mint a max of 3000 tokens
-        for(let i = 1; i <= addresses.length; i+=2) {
+        for(let i = 1; i < addresses.length - 1; i+=2) {
             const leaf = keccak256(addresses[i])
             const proof = mt.getHexProof(leaf);
 
@@ -144,6 +145,12 @@ describe('Whitelist', async function() {
             expect(await this.botz2.getPublicMintCount()).to.equal(i+1);
         }
 
+
+        // Address not on whitelist tries to mint from whitelist
+        const leaf = keccak256(addresses[19])
+        const proof = mt.getHexProof(leaf);
+        await expect(this.botz2.mintFromWhitelist(2, proof, twoToken)).to.be.revertedWith("Invalid address");
+        expect(await this.botz2.balanceOf(this.accounts[19].address)).to.equal(0);
 
 
 
