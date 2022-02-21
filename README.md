@@ -14,6 +14,16 @@ node scripts/sample-script.js
 npx hardhat help
 ```
 
-# Test coverage
+# Run Test coverage
 1. Run `hh coverage --testfiles "test/*"` in the the home directory
 2. Open `index.html` inside `coverage/` that is created from the test coverage
+
+# View test coverage
+1. `cd` into `coverage` directory and open `index.html` in the browser.
+
+# Mythril testing
+1. To run, install mythril and then run `myth analyze NikyBotzPictureDay.sol` inside /contracts directory
+2. The output from the test is in the home directory of the project, name `myth_analyze_output`
+
+# Slither testing
+1. Install slither, and run `slither NikyBotzPictureDay.sol` inside `contracts/` directory
