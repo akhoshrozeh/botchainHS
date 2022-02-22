@@ -14,6 +14,10 @@ node scripts/sample-script.js
 npx hardhat help
 ```
 
+# Contract Format
+Follow the instructions here to use plug-in to lint your code:
+`https://github.com/prettier-solidity/prettier-plugin-solidity`
+
 # Run Test coverage
 1. Run `hh coverage --testfiles "test/*"` in the the home directory
 2. Open `index.html` inside `coverage/` that is created from the test coverage
