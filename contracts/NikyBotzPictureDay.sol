@@ -5,6 +5,8 @@ import "./ERC721Tradable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
+/// @author Anthony Khoshrozeh and Studio Dev
+/// @title The ERC721 Contract for Niky Botz Picture Day
 contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     uint256 private currPublicID = 1;
 
@@ -32,13 +34,15 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     bool private _provenanceHashSet = false;
 
-    // getter?
     bool private _saleIsOn = false;
 
-    mapping(address => uint8) private hasMinted;
+    mapping(address => uint8) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
 
+    /**
+    @notice Ensures minting from whitelist can only occur during this timeframe 
+    */
     modifier presaleIsOpen() {
         require(
             block.timestamp >= whitelistBeginTS &&
@@ -48,16 +52,20 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         _;
     }
 
+    /**
+    @notice _saleIsOn must be true for any type of minting (reserves, public, whitelist)
+    @dev    Acts as a type of circuit breaker mechanism
+    */
     modifier saleOn() {
         require(_saleIsOn == true, "Sale off");
         _;
     }
 
+    /**
+    @notice For public and whitelist mists, ensures mintee can only mint 1 or 2 tokens per txn
+    */
     modifier validNumOfTokens(uint8 numTokens) {
-        require(
-            numTokens == 1 || numTokens == 2,
-            "Invalid no. of tokens"
-        );
+        require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
         _;
     }
 
@@ -87,7 +95,14 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         transferOwnership(multisig);
     }
 
-    // Can only be set once!
+    fallback() external payable {}
+
+    receive() external payable {}
+
+    /**
+    @notice This function can only be set once. This is to ensure metadata integrity before any sales begin
+    @dev This will be a hash of the concatenation of all images/metadata hashed sequentially
+    */
     function setProvenanceHash(string memory provHash)
         external
         onlyRole(MANAGER_ROLE)
@@ -98,10 +113,9 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         emit ProvenanceHashSet(provenanceHash);
     }
 
-    function flipSaleState() public onlyRole(MANAGER_ROLE) {
-        _saleIsOn = !_saleIsOn;
-    }
-
+    /**
+    @notice Sets the base URI for all tokens
+    */
     function setBaseTokenURI(string memory newBaseURI)
         external
         onlyRole(MANAGER_ROLE)
@@ -109,24 +123,27 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         _customBaseURI = newBaseURI;
     }
 
-    function baseTokenURI()
-        public
-        view
-        override(ERC721Tradable)
-        returns (string memory)
-    {
-        return _customBaseURI;
+    /**
+    @notice Sets the whitelist root
+    @dev The _root should be the root (a keccack256 hash) of a merkle tree of all whitelist addresses
+    */
+    function setWhitelistRoot(bytes32 root) external onlyRole(MANAGER_ROLE) {
+        whitelistRoot = root;
     }
 
-    function setWhitelistRoot(bytes32 _root) external onlyRole(MANAGER_ROLE) {
-        whitelistRoot = _root;
-    }
-
-    // UNIX epoch time
+    /**
+    @notice Sets the timestamp of when metadata will be revealed
+    @param ts A UNIX epoch time
+    */
     function setRevealTS(uint256 ts) external onlyRole(MANAGER_ROLE) {
         revealTS = ts;
     }
 
+    /**
+    @notice Sets the timeframe of when mints from the whitelist can occur
+    @param tsBegin UNIX epoch time
+    @param tsEnd UNIX epoch time
+    */
     function setWhitelistTS(uint256 tsBegin, uint256 tsEnd)
         external
         onlyRole(MANAGER_ROLE)
@@ -135,9 +152,13 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         whitelistEndTS = tsEnd;
     }
 
-    // reserver tokens [4000, 4100] for owner
-    // add check for tokenid to start at 4001
-    function mintReserveSchoolBotz(uint256 numTokens, address _mintTo)
+    // dont need ^
+
+    /**
+    @notice Mints up to a max. of 100 tokens (by managers)
+    @dev The token ids for these resevered are [5901, 6000]
+    */
+    function mintReserveSchoolBotz(uint256 numTokens, address mintToAddress)
         external
         saleOn
         onlyRole(MANAGER_ROLE)
@@ -146,12 +167,17 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
         uint256 currReserveIndex = currReserveID;
         for (uint256 i = 0; i < numTokens; i++) {
-            _safeMint(_mintTo, currReserveIndex);
+            _safeMint(mintToAddress, currReserveIndex);
             currReserveIndex = currReserveIndex + 1;
         }
         currReserveID = currReserveIndex;
     }
 
+    /*
+    @notice Mints up to 2 tokens if msg.sender is on whitelist, each cost 0.1 eth
+    @dev See https://github.com/miguelmota/merkletreejs-solidity for how to construct 'proof' on client side
+    @param proof This should be a merkle proof that verifies msg.sender is a part of the merkle root (whitelist root)
+    */
     function mintFromWhitelist(uint8 numTokens, bytes32[] memory proof)
         external
         payable
@@ -169,7 +195,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
             "Invalid ether value sent."
         );
         require(
-            hasMinted[msg.sender] + numTokens <= 2,
+            _hasMinted[msg.sender] + numTokens <= 2,
             "Whitelist mint limit"
         );
 
@@ -182,9 +208,12 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         }
 
         currPublicID = currIndex;
-        hasMinted[msg.sender] += numTokens;
+        _hasMinted[msg.sender] += numTokens;
     }
 
+    /**
+    @notice Mints up to 2 tokens, each cost 0.1 eth
+    */
     function mintSchoolBotz(uint8 numTokens)
         external
         payable
@@ -206,38 +235,59 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         currPublicID = currIndex;
     }
 
+    /**
+    @notice Only owner can withdraw funds from contract
+    */
     function withdrawFunds() public onlyRole(OWNER_ROLE) {
         address payable wallet = payable(owner());
 
-        (bool sent, ) = wallet.call{
-            value: address(this).balance
-        }("");
+        (bool sent, ) = wallet.call{value: address(this).balance}("");
         require(sent, "Failed to send Ether");
     }
 
+    /**
+    @return number of tokens minted from reserves
+    */
     function getReserveMintCount() public view returns (uint256) {
         return currReserveID - 5901;
     }
 
+    /**
+    @return number of tokens minted from whitlist and public
+    */
     function getPublicMintCount() public view returns (uint256) {
         return currPublicID - 1;
     }
 
+    /**
+    @return the whitelist root (merkle root)
+    */
     function getWhitelistRoot() public view returns (bytes32) {
         return whitelistRoot;
     }
 
-    // Overriding functions
-    function _msgSender()
-        internal
+    /**
+    @return the base URI for tokens
+    */
+    function baseTokenURI()
+        public
         view
-        override(ERC721Tradable, Context)
-        returns (address sender)
+        override(ERC721Tradable)
+        returns (string memory)
     {
-        return super._msgSender();
+        return _customBaseURI;
     }
 
-    // override function from ERC721.sol and AccessControl.sol
+    /**
+    @notice flips the sale state
+    */
+    function flipSaleState() public onlyRole(MANAGER_ROLE) {
+        _saleIsOn = !_saleIsOn;
+    }
+
+    /**
+    @dev Must be overriden
+    */
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -246,5 +296,17 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+    @dev Must be overriden
+    */
+    function _msgSender()
+        internal
+        view
+        override(ERC721Tradable, Context)
+        returns (address sender)
+    {
+        return super._msgSender();
     }
 }
