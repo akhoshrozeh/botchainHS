@@ -32,3 +32,6 @@ Follow the instructions here to use plug-in to lint your code:
 
 # Slither testing
 1. Install slither, and run `slither NikyBotzPictureDay.sol` inside `contracts/` directory
+ OR
+ to pipe the output of slither into a file, run this:
+ `slither contract.sol 2>&1 | tee slither_output_file`
