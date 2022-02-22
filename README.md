@@ -19,8 +19,9 @@ Follow the instructions here to use plug-in to lint your code:
 `https://github.com/prettier-solidity/prettier-plugin-solidity`
 
 # Run Test coverage
-1. Run `hh coverage --testfiles "test/*"` in the the home directory
-2. Open `index.html` inside `coverage/` that is created from the test coverage
+1. To install, follow instructions here: `https://github.com/sc-forks/solidity-coverage`
+2. Run `hh coverage --testfiles "test/*"` in the the home directory
+3. Open `index.html` inside `coverage/` that is created from the test coverage
 
 # View test coverage
 1. `cd` into `coverage` directory and open `index.html` in the browser.
