@@ -1,24 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "./ERC721Tradable.sol";
+// import "./ERC721Tradable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /// @author Anthony Khoshrozeh and Studio Dev
 /// @title The ERC721 Contract for Niky Botz Picture Day
-contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
+contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     uint256 private currPublicID = 1;
 
     uint256 private currReserveID = 5901;
-
-    // Use Unix Timestamp for exact time
-    // * This is currently a placeholder (2/22/22 at 12:00:00 AM)
-    uint256 public whitelistBeginTS = 1645747200;
-
-    uint256 public whitelistEndTS = 1645747500;
-
-    uint256 public revealTS = 1645747200;
 
     bytes32 public whitelistRoot = "";
 
@@ -32,32 +26,37 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
 
     string private _customBaseURI = "";
 
+    // getters? 
+    // Must be true for any minting to possibly occur
+    bool private _allMintOn = false;
+
+    // Must be true and allMintOn must be true to mint publicly
+    bool private _publicMintOn = false;
+
+    // Must be true and allMintOn must be true to mint from whitelist
+    bool private _whitelistMintOn = false;
+
+
     bool private _provenanceHashSet = false;
-
-    bool private _saleIsOn = false;
-
+    
     mapping(address => uint8) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
 
-    /**
-    @notice Ensures minting from whitelist can only occur during this timeframe 
-    */
-    modifier presaleIsOpen() {
-        require(
-            block.timestamp >= whitelistBeginTS &&
-                block.timestamp <= whitelistEndTS,
-            "Presale Off"
-        );
+
+
+    modifier allMintOn() {
+        require(_allMintOn, "All minting off");
         _;
     }
 
-    /**
-    @notice _saleIsOn must be true for any type of minting (reserves, public, whitelist)
-    @dev    Acts as a type of circuit breaker mechanism
-    */
-    modifier saleOn() {
-        require(_saleIsOn == true, "Sale off");
+    modifier publicMintOn() {
+        require(_publicMintOn, "Public minting off");
+        _;
+    }
+
+    modifier whitelistMintOn() {
+        require(_whitelistMintOn, "Whitelist minting off");
         _;
     }
 
@@ -72,11 +71,10 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     constructor(
         string memory name,
         string memory symbol,
-        address proxyRegAddress,
         string memory customBaseURI,
         address multisig,
         address sysadmin
-    ) ERC721Tradable(name, symbol, proxyRegAddress) {
+    ) ERC721(name, symbol) {
         _customBaseURI = customBaseURI;
 
         _setupRole(OWNER_ROLE, multisig);
@@ -131,28 +129,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
         whitelistRoot = root;
     }
 
-    /**
-    @notice Sets the timestamp of when metadata will be revealed
-    @param ts A UNIX epoch time
-    */
-    function setRevealTS(uint256 ts) external onlyRole(MANAGER_ROLE) {
-        revealTS = ts;
-    }
 
-    /**
-    @notice Sets the timeframe of when mints from the whitelist can occur
-    @param tsBegin UNIX epoch time
-    @param tsEnd UNIX epoch time
-    */
-    function setWhitelistTS(uint256 tsBegin, uint256 tsEnd)
-        external
-        onlyRole(MANAGER_ROLE)
-    {
-        whitelistBeginTS = tsBegin;
-        whitelistEndTS = tsEnd;
-    }
-
-    // dont need ^
 
     /**
     @notice Mints up to a max. of 100 tokens (by managers)
@@ -160,7 +137,7 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     */
     function mintReserveSchoolBotz(uint256 numTokens, address mintToAddress)
         external
-        saleOn
+        allMintOn
         onlyRole(MANAGER_ROLE)
     {
         require(numTokens + currReserveID <= 6001, "Over reserve limit");
@@ -181,8 +158,8 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     function mintFromWhitelist(uint8 numTokens, bytes32[] memory proof)
         external
         payable
-        saleOn
-        presaleIsOpen
+        whitelistMintOn
+        allMintOn
         validNumOfTokens(numTokens)
     {
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
@@ -217,7 +194,8 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     function mintSchoolBotz(uint8 numTokens)
         external
         payable
-        saleOn
+        publicMintOn
+        allMintOn
         validNumOfTokens(numTokens)
     {
         require(numTokens + currPublicID <= 5901, "Over token limit.");
@@ -272,7 +250,6 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     function baseTokenURI()
         public
         view
-        override(ERC721Tradable)
         returns (string memory)
     {
         return _customBaseURI;
@@ -281,9 +258,24 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     /**
     @notice flips the sale state
     */
-    function flipSaleState() public onlyRole(MANAGER_ROLE) {
-        _saleIsOn = !_saleIsOn;
+    // function flipSaleState() public onlyRole(MANAGER_ROLE) {
+    //     _saleIsOn = !_saleIsOn;
+    // }
+
+    function flipAllMintState() public onlyRole(MANAGER_ROLE) {
+        _allMintOn = !_allMintOn;
     }
+
+
+    function flipPublicMintState() public onlyRole(MANAGER_ROLE) {
+        _publicMintOn = !_publicMintOn;
+    }
+
+
+    function flipWhitelistMintState() public onlyRole(MANAGER_ROLE) {
+        _whitelistMintOn = !_whitelistMintOn;
+    }
+
 
     /**
     @dev Must be overriden
@@ -301,12 +293,12 @@ contract NikyBotzPictureDay is ERC721Tradable, AccessControl {
     /**
     @dev Must be overriden
     */
-    function _msgSender()
-        internal
-        view
-        override(ERC721Tradable, Context)
-        returns (address sender)
-    {
-        return super._msgSender();
-    }
+    // function _msgSender()
+    //     internal
+    //     view
+    //     override(ERC721, Context)
+    //     returns (address sender)
+    // {
+    //     return super._msgSender();
+    // }
 }
