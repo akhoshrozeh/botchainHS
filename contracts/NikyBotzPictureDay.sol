@@ -36,7 +36,6 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     // Must be true and allMintOn must be true to mint from whitelist
     bool private _whitelistMintOn = false;
 
-
     bool private _provenanceHashSet = false;
     
     mapping(address => uint8) private _hasMinted;
@@ -255,13 +254,6 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         return _customBaseURI;
     }
 
-    /**
-    @notice flips the sale state
-    */
-    // function flipSaleState() public onlyRole(MANAGER_ROLE) {
-    //     _saleIsOn = !_saleIsOn;
-    // }
-
     function flipAllMintState() public onlyRole(MANAGER_ROLE) {
         _allMintOn = !_allMintOn;
     }
@@ -290,15 +282,4 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    /**
-    @dev Must be overriden
-    */
-    // function _msgSender()
-    //     internal
-    //     view
-    //     override(ERC721, Context)
-    //     returns (address sender)
-    // {
-    //     return super._msgSender();
-    // }
 }
