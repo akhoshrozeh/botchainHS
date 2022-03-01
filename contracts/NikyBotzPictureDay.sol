@@ -26,7 +26,6 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
     string private _customBaseURI = "";
 
-    // getters? 
     // Must be true for any minting to possibly occur
     bool private _allMintOn = false;
 
@@ -44,17 +43,25 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     event ProvenanceHashSet(string provHash);
 
 
-
+    /**
+    @notice Used for all 3 minting functions
+    */
     modifier allMintOn() {
         require(_allMintOn, "All minting off");
         _;
     }
 
+    /**
+    @notice Used for 'mintSchoolBotz' function
+    */
     modifier publicMintOn() {
         require(_publicMintOn, "Public minting off");
         _;
     }
 
+    /**
+    @notice Used for 'mintFromWhitelist' function
+    */
     modifier whitelistMintOn() {
         require(_whitelistMintOn, "Whitelist minting off");
         _;
@@ -255,12 +262,10 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         return _customBaseURI;
     }
 
-    /**
-    @notice flips the sale state
-    */
-    // function flipSaleState() public onlyRole(MANAGER_ROLE) {
-    //     _saleIsOn = !_saleIsOn;
-    // }
+    function tokenURI(uint256 _tokenId) override public view returns (string memory) {
+        return string(abi.encodePacked(baseTokenURI(), Strings.toString(_tokenId)));
+    }
+
 
     function flipAllMintState() public onlyRole(MANAGER_ROLE) {
         _allMintOn = !_allMintOn;
@@ -276,6 +281,9 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         _whitelistMintOn = !_whitelistMintOn;
     }
 
+    function getMintState() public view returns (bool, bool, bool) {
+        return (_allMintOn, _publicMintOn, _whitelistMintOn);
+    }
 
     /**
     @dev Must be overriden

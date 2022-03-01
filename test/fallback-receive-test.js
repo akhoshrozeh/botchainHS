@@ -11,7 +11,7 @@ describe('Fallback and Receive', async function () {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
-        this.botz = await this.factory.deploy('BOTZ', 'BOTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+        this.botz = await this.factory.deploy('Botz', 'BTZ', 'ipfs',
             this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
         

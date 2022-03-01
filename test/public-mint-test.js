@@ -16,24 +16,26 @@ describe('Public Minting', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
-        this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+        this.botz = await this.factory.deploy('Botz', 'BTZ', 'ipfs',
             this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
     });
 
 
     it('Can only mint 1 or 2 at a time', async function () {
-        await this.botz.connect(this.accounts[0]).flipSaleState();
+        await this.botz.connect(this.accounts[0]).flipAllMintState();
+        await this.botz.connect(this.accounts[0]).flipPublicMintState();
         const threeToken = {value: ethers.utils.parseEther("0.3")}
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(3, threeToken)).to.be.revertedWith("Invalid no. of tokens");
-        await this.botz.connect(this.accounts[0]).flipSaleState();
+        // await this.botz.connect(this.accounts[0]).flipAllMintState();
+        await this.botz.connect(this.accounts[0]).flipPublicMintState();
     });
 
     it('Can only mint during saleOn', async function() {
         // const time = Math.floor(Date.now() / 1000);
         // await this.botz.connect(this.accounts[1]).setPublicSaleTS(time - 120);
-        await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1)).to.be.revertedWith("Sale off");
-        this.botz.connect(this.accounts[1]).flipSaleState();
+        await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1)).to.be.revertedWith("Public minting off");
+        this.botz.connect(this.accounts[1]).flipPublicMintState();
     });
 
     it('Must send minimum eth price ', async function () {

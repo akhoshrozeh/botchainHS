@@ -9,10 +9,11 @@ describe('Base URI', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
-        this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+        this.botz = await this.factory.deploy('Botz', 'BTZ', 'ipfs',
             this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
-        await this.botz.connect(this.accounts[0]).flipSaleState();
+        await this.botz.connect(this.accounts[0]).flipAllMintState();
+
 
         // accounts[2] is a manager
         await this.botz.connect(this.accounts[1]).grantRole(keccak256('MANAGER_ROLE'), this.accounts[2].address);
@@ -32,8 +33,7 @@ describe('Base URI', async function() {
     });
 
     it('Token URIs are baseURI + tokenID', async function () {
-        
-
+        console.log("base uri:", await this.botz.baseTokenURI());
         for(let i = 0; i < 20; i++) {
             let tokenId = i+5901;
             await this.botz.connect(this.accounts[2]).mintReserveSchoolBotz(1, this.accounts[3].address);

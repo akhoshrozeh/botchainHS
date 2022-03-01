@@ -9,10 +9,11 @@ describe('Whitelist', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
-        this.botz = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+        this.botz = await this.factory.deploy('Botz', 'BTZ', 'ipfs',
             this.accounts[0].address, this.accounts[1].address);
         await this.botz.deployed();
-        await this.botz.connect(this.accounts[1]).flipSaleState();
+        await this.botz.connect(this.accounts[1]).flipAllMintState();
+        await this.botz.connect(this.accounts[1]).flipWhitelistMintState();
     });
 
     
@@ -28,8 +29,8 @@ describe('Whitelist', async function() {
         const oneToken = {value: ethers.utils.parseEther("0.1")}
         const twoToken = {value: ethers.utils.parseEther("0.2")}
 
-        const time = Math.floor(Date.now() / 1000);
-        await this.botz.connect(this.accounts[1]).setWhitelistTS(time - 1000, time + 2000);
+        // const time = Math.floor(Date.now() / 1000);
+        // await this.botz.connect(this.accounts[1]).setWhitelistTS(time - 1000, time + 2000);
         let addresses = Array();
         for(let i = 0; i < this.accounts.length; i++) {
             addresses.push(this.accounts[i].address);
@@ -103,12 +104,13 @@ describe('Whitelist', async function() {
         expect(await this.botz.ownerOf(3)).to.equal(this.accounts[15].address);
 
         // create a new contract instance (easier to test with new contract)
-        this.botz2 = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+        this.botz2 = await this.factory.deploy('Botz', 'BTZ', 'ipfs',
             this.accounts[0].address, this.accounts[1].address);
         await this.botz2.deployed();
-        await this.botz2.connect(this.accounts[1]).flipSaleState();
-        const time = Math.floor(Date.now() / 1000);
-        await this.botz2.connect(this.accounts[1]).setWhitelistTS(time - 1000, time + 2000);
+        await this.botz2.connect(this.accounts[1]).flipAllMintState();
+        await this.botz2.connect(this.accounts[1]).flipWhitelistMintState();
+        // const time = Math.floor(Date.now() / 1000);
+        // await this.botz2.connect(this.accounts[1]).setWhitelistTS(time - 1000, time + 2000);
         const twoToken = {value: ethers.utils.parseEther("0.2")}
 
 

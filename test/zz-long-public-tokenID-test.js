@@ -26,13 +26,14 @@ describe('zz-Public Minting TokenID (~2 min)', async function() {
     it('Max minting of 5900 tokens', async function () {
 
         // deploy new contract instance
-        this.botz2 = await this.factory.deploy('Botz', 'BTZ', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0', 'ipfs',
+        this.botz2 = await this.factory.deploy('Botz', 'BTZ', 'ipfs',
             this.accounts[0].address, this.accounts[1].address);
         await this.botz2.deployed();
-        await this.botz2.connect(this.accounts[1]).flipSaleState();
+        await this.botz2.connect(this.accounts[1]).flipAllMintState();
+        await this.botz2.connect(this.accounts[1]).flipPublicMintState();
 
         const oneToken = {value: ethers.utils.parseEther("0.1")}
-        const twoToken = {value: ethers.utils.parseEther("0.2")}
+        const twoToken = {value: ethers.utils.parseEther("0.2")} 
 
         for(let i = 1; i <= 5900; i+=2) {
             // check tokens dont exist
