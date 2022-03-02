@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity 0.8.10;
 
-// import "./ERC721Tradable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-/// @author Anthony Khoshrozeh and Studio Dev
 /// @title The ERC721 Contract for Niky Botz Picture Day
 contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
-    uint256 private currPublicID = 1;
+    uint256 private _currPublicID = 1;
 
-    uint256 private currReserveID = 5901;
+    uint256 private _currReserveID = 5901;
 
     bytes32 public whitelistRoot = "";
 
@@ -35,12 +33,19 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     // Must be true and allMintOn must be true to mint from whitelist
     bool private _whitelistMintOn = false;
 
-
     bool private _provenanceHashSet = false;
     
     mapping(address => uint8) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
+
+    event WhitelistRootUpdated(bytes32 root);
+
+    event allMintOnStateFlipped(bool state);
+    
+    event publicMintOnStateFlipped(bool state);
+    
+    event whitelistMintOnStateFlipped(bool state);
 
 
     /**
@@ -134,6 +139,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     */
     function setWhitelistRoot(bytes32 root) external onlyRole(MANAGER_ROLE) {
         whitelistRoot = root;
+        emit WhitelistRootUpdated(whitelistRoot);
     }
 
 
@@ -147,14 +153,14 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         allMintOn
         onlyRole(MANAGER_ROLE)
     {
-        require(numTokens + currReserveID <= 6001, "Over reserve limit");
+        require(numTokens + _currReserveID <= 6001, "Over reserve limit");
 
-        uint256 currReserveIndex = currReserveID;
+        uint256 currReserveIndex = _currReserveID;
         for (uint256 i = 0; i < numTokens; i++) {
             _safeMint(mintToAddress, currReserveIndex);
             currReserveIndex = currReserveIndex + 1;
         }
-        currReserveID = currReserveIndex;
+        _currReserveID = currReserveIndex;
     }
 
     /*
@@ -183,15 +189,15 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
             "Whitelist mint limit"
         );
 
-        uint256 currIndex = currPublicID;
+        uint256 currIndex = _currPublicID;
         for (uint256 i = 0; i < numTokens; i++) {
-            if (currPublicID <= 5900) {
+            if (_currPublicID <= 5900) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
         }
 
-        currPublicID = currIndex;
+        _currPublicID = currIndex;
         _hasMinted[msg.sender] += numTokens;
     }
 
@@ -205,19 +211,19 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         allMintOn
         validNumOfTokens(numTokens)
     {
-        require(numTokens + currPublicID <= 5901, "Over token limit.");
+        require(numTokens + _currPublicID <= 5901, "Over token limit.");
         require(0.1 ether * numTokens <= msg.value, "Invalid msg.value");
 
-        uint256 currIndex = currPublicID;
+        uint256 currIndex = _currPublicID;
 
         for (uint256 i = 0; i < numTokens; i++) {
-            if (currPublicID <= 5900) {
+            if (_currPublicID <= 5900) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
         }
 
-        currPublicID = currIndex;
+        _currPublicID = currIndex;
     }
 
     /**
@@ -234,14 +240,14 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     @return number of tokens minted from reserves
     */
     function getReserveMintCount() public view returns (uint256) {
-        return currReserveID - 5901;
+        return _currReserveID - 5901;
     }
 
     /**
     @return number of tokens minted from whitlist and public
     */
     function getPublicMintCount() public view returns (uint256) {
-        return currPublicID - 1;
+        return _currPublicID - 1;
     }
 
     /**
@@ -262,32 +268,46 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         return _customBaseURI;
     }
 
+    /**
+    @return the TokenURI given the tokenId
+    */
     function tokenURI(uint256 _tokenId) override public view returns (string memory) {
         return string(abi.encodePacked(baseTokenURI(), Strings.toString(_tokenId)));
     }
 
 
+    /**
+    @notice Flips the _allMintOn state
+    */
     function flipAllMintState() public onlyRole(MANAGER_ROLE) {
         _allMintOn = !_allMintOn;
+        emit allMintOnStateFlipped(_allMintOn);
     }
 
-
+    /**
+    @notice Flips the _publicMintOn state
+    */
     function flipPublicMintState() public onlyRole(MANAGER_ROLE) {
         _publicMintOn = !_publicMintOn;
+        emit publicMintOnStateFlipped(_publicMintOn);
     }
 
-
+    /**
+    @notice Flips the _whitelistMintOn state
+    */
     function flipWhitelistMintState() public onlyRole(MANAGER_ROLE) {
         _whitelistMintOn = !_whitelistMintOn;
+        emit whitelistMintOnStateFlipped(_whitelistMintOn);
     }
 
+    /**
+    @return the 3 minting states
+    */
     function getMintState() public view returns (bool, bool, bool) {
         return (_allMintOn, _publicMintOn, _whitelistMintOn);
     }
 
-    /**
-    @dev Must be overriden
-    */
+
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -298,15 +318,4 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    /**
-    @dev Must be overriden
-    */
-    // function _msgSender()
-    //     internal
-    //     view
-    //     override(ERC721, Context)
-    //     returns (address sender)
-    // {
-    //     return super._msgSender();
-    // }
 }
