@@ -17,6 +17,7 @@
     "web3": "^1.7.0"
   },
   "dependencies": {
+    "dotenv": "^16.0.0",
     "hardhat-contract-sizer": "^2.4.0",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
@@ -27,5 +28,3 @@
     "build-contracts": "sol-merger \"./contracts/*.sol\"  ./build"
   }
 }
-
-

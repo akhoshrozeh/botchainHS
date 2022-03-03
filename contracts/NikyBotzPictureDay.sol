@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.10;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -34,19 +34,18 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     bool private _whitelistMintOn = false;
 
     bool private _provenanceHashSet = false;
-    
+
     mapping(address => uint8) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
 
     event WhitelistRootUpdated(bytes32 root);
 
-    event allMintOnStateFlipped(bool state);
-    
-    event publicMintOnStateFlipped(bool state);
-    
-    event whitelistMintOnStateFlipped(bool state);
+    event AllMintOnStateFlipped(bool state);
 
+    event PublicMintOnStateFlipped(bool state);
+
+    event WhitelistMintOnStateFlipped(bool state);
 
     /**
     @notice Used for all 3 minting functions
@@ -141,8 +140,6 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         whitelistRoot = root;
         emit WhitelistRootUpdated(whitelistRoot);
     }
-
-
 
     /**
     @notice Mints up to a max. of 100 tokens (by managers)
@@ -260,28 +257,31 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     /**
     @return the base URI for tokens
     */
-    function baseTokenURI()
-        public
-        view
-        returns (string memory)
-    {
+    function baseTokenURI() public view returns (string memory) {
         return _customBaseURI;
     }
 
     /**
     @return the TokenURI given the tokenId
     */
-    function tokenURI(uint256 _tokenId) override public view returns (string memory) {
-        return string(abi.encodePacked(baseTokenURI(), Strings.toString(_tokenId)));
+    function tokenURI(uint256 _tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        return
+            string(
+                abi.encodePacked(baseTokenURI(), Strings.toString(_tokenId))
+            );
     }
-
 
     /**
     @notice Flips the _allMintOn state
     */
     function flipAllMintState() public onlyRole(MANAGER_ROLE) {
         _allMintOn = !_allMintOn;
-        emit allMintOnStateFlipped(_allMintOn);
+        emit AllMintOnStateFlipped(_allMintOn);
     }
 
     /**
@@ -289,7 +289,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     */
     function flipPublicMintState() public onlyRole(MANAGER_ROLE) {
         _publicMintOn = !_publicMintOn;
-        emit publicMintOnStateFlipped(_publicMintOn);
+        emit PublicMintOnStateFlipped(_publicMintOn);
     }
 
     /**
@@ -297,16 +297,23 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     */
     function flipWhitelistMintState() public onlyRole(MANAGER_ROLE) {
         _whitelistMintOn = !_whitelistMintOn;
-        emit whitelistMintOnStateFlipped(_whitelistMintOn);
+        emit WhitelistMintOnStateFlipped(_whitelistMintOn);
     }
 
     /**
     @return the 3 minting states
     */
-    function getMintState() public view returns (bool, bool, bool) {
+    function getMintState()
+        public
+        view
+        returns (
+            bool,
+            bool,
+            bool
+        )
+    {
         return (_allMintOn, _publicMintOn, _whitelistMintOn);
     }
-
 
     function supportsInterface(bytes4 interfaceId)
         public
@@ -317,5 +324,4 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     {
         return super.supportsInterface(interfaceId);
     }
-
 }

@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require('hardhat-contract-sizer');
 require('solidity-coverage')
 require("hardhat-gas-reporter");
+const dotenv = require('dotenv');
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -13,6 +14,10 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+dotenv.config();
+const privKey = process.env.PRIV_KEY;
+const infuraURL = process.env.INFURA_URL;
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -21,4 +26,10 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: "0.8.10",
+  networks: {
+    rinkeby: {
+      url: infuraURL,
+      accounts: [privKey]
+    }
+  }
 };
