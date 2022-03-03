@@ -35,3 +35,9 @@ Follow the instructions here to use plug-in to lint your code:
  OR
  to pipe the output of slither into a file, run this:
  `slither contract.sol 2>&1 | tee slither_output_file`
+ 
+ # Verifying on Etherscan
+ Version 0 is deployed on Rinkeby, which can be found at `https://rinkeby.etherscan.io/address/0x5b1070F7aE553b67C5Affb71f489a52BB2437F42`.
+ To verify the contract, you need to upload the source code, which includes all dependencies. I used `multisol` which automatically creates 
+ a folder with all contracts in the dependency graph. Then verifying is easy. You can follow the instructions here to use to:
+ `https://github.com/paulrberg/multisol`
