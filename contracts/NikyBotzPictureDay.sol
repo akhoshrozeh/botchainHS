@@ -178,7 +178,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
             "Invalid address"
         );
         require(
-            0.1 ether * numTokens <= msg.value,
+            0.08 ether * numTokens <= msg.value,
             "Invalid ether value sent."
         );
         require(
