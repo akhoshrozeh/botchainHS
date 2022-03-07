@@ -165,7 +165,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     @dev See https://github.com/miguelmota/merkletreejs-solidity for how to construct 'proof' on client side
     @param proof This should be a merkle proof that verifies msg.sender is a part of the merkle root (whitelist root)
     */
-    function mintFromWhitelist(uint8 numTokens, bytes32[] memory proof)
+    function mintFromWhitelist(uint8 numTokens, bytes32[] calldata proof)
         external
         payable
         whitelistMintOn
