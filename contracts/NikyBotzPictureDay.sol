@@ -315,6 +315,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         return (_allMintOn, _publicMintOn, _whitelistMintOn);
     }
 
+
     function supportsInterface(bytes4 interfaceId)
         public
         view

@@ -72,8 +72,8 @@ describe('Whitelist', async function() {
     });
 
     it('Valid amount of eth sent when minting from whitelist', async function () {
-        const badOne = {value: ethers.utils.parseEther("0.09999")}
-        const badTwo = {value: ethers.utils.parseEther("0.019999")}
+        const badOne = {value: ethers.utils.parseEther("0.079999")}
+        const badTwo = {value: ethers.utils.parseEther("0.159999")}
 
         let addresses = Array();
         for(let i = 0; i < this.accounts.length; i++) {
@@ -111,7 +111,7 @@ describe('Whitelist', async function() {
         await this.botz2.connect(this.accounts[1]).flipWhitelistMintState();
         // const time = Math.floor(Date.now() / 1000);
         // await this.botz2.connect(this.accounts[1]).setWhitelistTS(time - 1000, time + 2000);
-        const twoToken = {value: ethers.utils.parseEther("0.2")}
+        const twoToken = {value: ethers.utils.parseEther("0.16")}
 
 
         // tokens from whitelist are under the 'public' domain 
