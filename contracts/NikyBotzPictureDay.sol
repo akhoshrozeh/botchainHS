@@ -35,6 +35,14 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
     bool private _provenanceHashSet = false;
 
+    bool private _1500Locked = false;
+
+    bool private _3000Locked = false;
+
+    bool private _4500Locked = false;
+
+    bool private _5900Locked = false;
+
     mapping(address => uint8) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
@@ -46,6 +54,53 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     event PublicMintOnStateFlipped(bool state);
 
     event WhitelistMintOnStateFlipped(bool state);
+
+    event AutoLock(uint256 publicId);
+
+
+    // S
+    // so first we need to check if numTokens will go over S
+    modifier checkAutoLocks(uint256 numTokens) {
+        uint256 currMinted = _currPublicID - 1;
+        
+        // If this goes over the lock limit and it has been locked yet
+        if ((_1500Locked == false && currMinted + numTokens > 1500) ||
+            (_3000Locked == false && currMinted + numTokens > 3000) ||
+            (_4500Locked == false && currMinted + numTokens > 4500) ||
+            (_5900Locked == false && currMinted + numTokens > 5900) 
+        ) {
+            revert();
+        }
+        
+        // minting is stopped after this mint (modifier is after sale check)
+        if (_1500Locked == false && currMinted + numTokens == 1500) {
+            _1500Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+        }
+
+        if (_3000Locked == false && currMinted + numTokens == 3000) {
+            _3000Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+        }
+       
+        if (_4500Locked == false && currMinted + numTokens == 4500) {
+            _4500Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+        }
+
+        if (_5900Locked == false && currMinted + numTokens == 5900) {
+            _5900Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+        }
+
+        _;
+  
+    }
+
 
     /**
     @notice Used for all 3 minting functions
@@ -145,6 +200,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     @notice Mints up to a max. of 100 tokens (by managers)
     @dev The token ids for these resevered are [5901, 6000]
     */
+    // ! overflow attack on numtokens ? check this out
     function mintReserveSchoolBotz(uint256 numTokens, address mintToAddress)
         external
         allMintOn
@@ -171,6 +227,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         whitelistMintOn
         allMintOn
         validNumOfTokens(numTokens)
+        checkAutoLocks(numTokens)
     {
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(
@@ -207,7 +264,9 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         publicMintOn
         allMintOn
         validNumOfTokens(numTokens)
+        checkAutoLocks(numTokens)
     {
+        // move the memory variable up here; reduces a read
         require(numTokens + _currPublicID <= 5901, "Over token limit.");
         require(0.1 ether * numTokens <= msg.value, "Invalid msg.value");
 
@@ -221,6 +280,8 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         }
 
         _currPublicID = currIndex;
+
+
     }
 
     /**
