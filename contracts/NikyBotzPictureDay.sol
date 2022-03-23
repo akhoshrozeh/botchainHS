@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /// @title The ERC721 Contract for Niky Botz Picture Day
-contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
+contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     uint256 private _currPublicID = 1;
 
     uint256 private _currReserveID = 5901;
@@ -222,6 +222,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
         _currPublicID = currIndex;
     }
+    
 
     /**
     @notice Only owner can withdraw funds from contract
@@ -231,6 +232,16 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
         (bool sent, ) = wallet.call{value: address(this).balance}("");
         require(sent, "Failed to send Ether");
+    }
+   
+     function getOwnedTokens(address from) public view returns (uint256[] memory) {
+        uint256 length = balanceOf(from);
+        uint256[] memory tokens = new uint256[](length);
+        
+        for (uint i; i < length; i++) {
+            tokens[i] = tokenOfOwnerByIndex(from,i);
+        }
+        return tokens;
     }
 
     /**
@@ -320,7 +331,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         public
         view
         virtual
-        override(ERC721, AccessControl)
+        override(ERC721Enumerable, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
