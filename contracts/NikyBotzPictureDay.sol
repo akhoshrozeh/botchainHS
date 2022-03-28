@@ -69,7 +69,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
             (_4500Locked == false && currMinted + numTokens > 4500) ||
             (_5900Locked == false && currMinted + numTokens > 5900) 
         ) {
-            revert();
+            revert("over lock limit");
         }
         
         // minting is stopped after this mint (modifier is after sale check)
