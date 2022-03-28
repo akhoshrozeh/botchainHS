@@ -45,6 +45,7 @@ describe('zz-Public Minting TokenID (~2 min)', async function() {
 
             let c = await this.botz2.getPublicMintCount();
 
+            // contract will flip state after these mint counts are reached (excluding 5900)
             if(c == 1500 || c == 3000 || c == 4500) {
                 expect(await this.botz2.getMintState()).to.eql([true, false, false]);
                 await this.botz2.connect(this.accounts[0]).flipPublicMintState();
