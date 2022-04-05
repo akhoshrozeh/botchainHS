@@ -35,6 +35,14 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
     bool private _provenanceHashSet = false;
 
+    bool private _1500Locked = false;
+
+    bool private _3000Locked = false;
+
+    bool private _4500Locked = false;
+
+    bool private _5900Locked = false;
+
     mapping(address => uint8) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
@@ -46,6 +54,55 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     event PublicMintOnStateFlipped(bool state);
 
     event WhitelistMintOnStateFlipped(bool state);
+
+    event AutoLock(uint256 minted);
+
+    // S
+    // so first we need to check if numTokens will go over S
+    modifier checkAutoLocks(uint256 numTokens) {
+        uint256 currMinted = _currPublicID - 1;
+
+        // If this goes over the lock limit and it has been locked yet
+        if (
+            (_1500Locked == false && currMinted + numTokens > 1500) ||
+            (_3000Locked == false && currMinted + numTokens > 3000) ||
+            (_4500Locked == false && currMinted + numTokens > 4500) ||
+            (_5900Locked == false && currMinted + numTokens > 5900)
+        ) {
+            revert("over lock limit");
+        }
+
+        // minting is stopped after this mint (modifier is after sale check)
+        if (_1500Locked == false && currMinted + numTokens == 1500) {
+            _1500Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+            emit AutoLock(1500);
+        }
+
+        if (_3000Locked == false && currMinted + numTokens == 3000) {
+            _3000Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+            emit AutoLock(3000);
+        }
+
+        if (_4500Locked == false && currMinted + numTokens == 4500) {
+            _4500Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+            emit AutoLock(4500);
+        }
+
+        if (_5900Locked == false && currMinted + numTokens == 5900) {
+            _5900Locked = true;
+            _publicMintOn = false;
+            _whitelistMintOn = false;
+            emit AutoLock(5900);
+        }
+
+        _;
+    }
 
     /**
     @notice Used for all 3 minting functions
@@ -165,20 +222,23 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     @dev See https://github.com/miguelmota/merkletreejs-solidity for how to construct 'proof' on client side
     @param proof This should be a merkle proof that verifies msg.sender is a part of the merkle root (whitelist root)
     */
-    function mintFromWhitelist(uint8 numTokens, bytes32[] memory proof)
+    function mintFromWhitelist(uint8 numTokens, bytes32[] calldata proof)
         external
         payable
         whitelistMintOn
         allMintOn
         validNumOfTokens(numTokens)
+        checkAutoLocks(numTokens)
     {
+        require(numTokens + _currPublicID <= 5901, "Over token limit.");
+
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(
             MerkleProof.verify(proof, getWhitelistRoot(), leaf) == true,
             "Invalid address"
         );
         require(
-            0.1 ether * numTokens <= msg.value,
+            0.08 ether * numTokens <= msg.value,
             "Invalid ether value sent."
         );
         require(
@@ -188,7 +248,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
         uint256 currIndex = _currPublicID;
         for (uint256 i = 0; i < numTokens; i++) {
-            if (_currPublicID <= 5900) {
+            if (currIndex <= 5900) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -207,14 +267,16 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         publicMintOn
         allMintOn
         validNumOfTokens(numTokens)
+        checkAutoLocks(numTokens)
     {
+        // move the memory variable up here; reduces a read
         require(numTokens + _currPublicID <= 5901, "Over token limit.");
         require(0.1 ether * numTokens <= msg.value, "Invalid msg.value");
 
         uint256 currIndex = _currPublicID;
 
         for (uint256 i = 0; i < numTokens; i++) {
-            if (_currPublicID <= 5900) {
+            if (currIndex <= 5900) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -226,7 +288,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     /**
     @notice Only owner can withdraw funds from contract
     */
-    function withdrawFunds() public onlyRole(OWNER_ROLE) {
+    function withdrawFunds() public onlyRole(OWNER_ROLE) onlyOwner {
         address payable wallet = payable(owner());
 
         (bool sent, ) = wallet.call{value: address(this).balance}("");
