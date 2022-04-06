@@ -1,0 +1,2 @@
+filterBlacklist: false
+filterFunctions: ["TestNikyBotzPictureDay.mintSchoolBotz(uint)"]
