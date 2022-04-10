@@ -25,7 +25,7 @@ describe('Public Minting', async function() {
     it('Can only mint 1 or 2 at a time', async function () {
         await this.botz.connect(this.accounts[0]).flipAllMintState();
         await this.botz.connect(this.accounts[0]).flipPublicMintState();
-        const threeToken = {value: ethers.utils.parseEther("0.3")}
+        const threeToken = {value: ethers.utils.parseEther("0.24")}
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(3, threeToken)).to.be.revertedWith("Invalid no. of tokens");
         // await this.botz.connect(this.accounts[0]).flipAllMintState();
         await this.botz.connect(this.accounts[0]).flipPublicMintState();
@@ -39,9 +39,9 @@ describe('Public Minting', async function() {
     });
 
     it('Must send minimum eth price ', async function () {
-        const oneToken = {value: ethers.utils.parseEther("0.1")}
-        const twoToken = {value: ethers.utils.parseEther("0.2")}
-        const badOneToken = {value: ethers.utils.parseEther("0.09999")}
+        const oneToken = {value: ethers.utils.parseEther("0.08")}
+        const twoToken = {value: ethers.utils.parseEther("0.16")}
+        const badOneToken = {value: ethers.utils.parseEther("0.079")}
         
         // Buying 1 token with no eth
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1)).to.be.revertedWith("Invalid msg.value");
@@ -61,12 +61,12 @@ describe('Public Minting', async function() {
     
     
     it('Contract balance is updated correctly with each txn', async function () {
-        const oneToken = {value: ethers.utils.parseEther("0.1")}
-        // 3 tokens have been minted so far in this test group, so contract balance should be 0.3 eth
+        const oneToken = {value: ethers.utils.parseEther("0.08")}
+        // 3 tokens have been minted so far in this test group, so contract balance should be 0.24 eth
         // balance is in wei
         let balance = await provider.getBalance(this.botz.address);
         balance = ethers.utils.formatEther(balance);
-        expect(balance).to.equal('0.3');
+        expect(balance).to.equal('0.24');
 
         // mint 100 more
         for(let i = 0; i < 100; i++) {
@@ -77,10 +77,10 @@ describe('Public Minting', async function() {
         let totalMints = await this.botz.getPublicMintCount();
         expect(totalMints).to.equal('103');
 
-        // verify balance of contract == totalMints * 0.1
+        // verify balance of contract == totalMints * 0.08
         balance = await provider.getBalance(this.botz.address);
         balance = ethers.utils.formatEther(balance);
-        expect(balance).to.equal('10.3');
+        expect(balance).to.equal('8.24');
     });
 
     // // this test takes about 2 minutes!

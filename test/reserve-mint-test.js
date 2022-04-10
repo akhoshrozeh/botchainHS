@@ -36,7 +36,7 @@ describe('Reserve Minting', async function() {
         
         // Mint the last token
         await this.botz.connect(this.accounts[1]).mintReserveSchoolBotz(1, this.accounts[1].address);
-        expect(await this.botz.ownerOf(6000)).to.equal(this.accounts[1].address);
+        expect(await this.botz.ownerOf(10000)).to.equal(this.accounts[1].address);
         
         // Try to mint the 101th reserve token
         await expect(this.botz.connect(this.accounts[1]).mintReserveSchoolBotz(1, this.accounts[1].address)).to.revertedWith("Over reserve limit");
@@ -44,7 +44,7 @@ describe('Reserve Minting', async function() {
     });
     
     it('Checking token ids of minted reserve tokens [5901, 6000]', async function () {
-        for(let i = 5901; i <= 6000; i++) {
+        for(let i = 9901; i <= 10000; i++) {
             expect(await this.botz.ownerOf(i)).to.equal(this.accounts[1].address);
         }
 
@@ -52,7 +52,7 @@ describe('Reserve Minting', async function() {
     }); 
     
     it('Checking reserve token URIs', async function() {
-        for(let i = 5901; i <= 6000; i++) {
+        for(let i = 9901; i <= 10000; i++) {
             expect(await this.botz.tokenURI(i)).to.equal("ipfs" + i);
         }
     });
