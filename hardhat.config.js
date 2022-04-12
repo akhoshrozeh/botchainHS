@@ -29,16 +29,13 @@ module.exports = {
   solidity: "0.8.10",
 
   networks: {
-
   //   rinkeby: {
   //     url: infuraURL,
   //     accounts: [privKey]
   //   }
   // }, 
-
   // etherscan: {
   //   apiKey: process.env.ETHERSCAN_KEY
   // }
-
   }
 };

@@ -34,7 +34,6 @@ contract Botz is ERC20, Ownable {
     // only the staking contract should be able to call this
     function mint(address account, uint amount) public onlyAuthorized(msg.sender) {
         _mint(account, amount);
-    }
 
 }
 
