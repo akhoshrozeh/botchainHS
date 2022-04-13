@@ -22,16 +22,16 @@ describe('Public Minting', async function() {
     });
 
 
-    it('Can only mint 1 or 2 at a time', async function () {
+    it('Can only mint 10 at a time', async function () {
         await this.botz.connect(this.accounts[0]).flipAllMintState();
         await this.botz.connect(this.accounts[0]).flipPublicMintState();
-        const threeToken = {value: ethers.utils.parseEther("0.24")}
-        await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(3, threeToken)).to.be.revertedWith("Invalid no. of tokens");
+        const amount = {value: ethers.utils.parseEther("0.88")}
+        await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(11, amount)).to.be.revertedWith("Invalid no. of tokens");
         // await this.botz.connect(this.accounts[0]).flipAllMintState();
         await this.botz.connect(this.accounts[0]).flipPublicMintState();
     });
 
-    it('Can only mint during saleOn', async function() {
+    it('Can only mint during public mint', async function() {
         // const time = Math.floor(Date.now() / 1000);
         // await this.botz.connect(this.accounts[1]).setPublicSaleTS(time - 120);
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1)).to.be.revertedWith("Public minting off");

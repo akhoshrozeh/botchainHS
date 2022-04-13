@@ -77,10 +77,10 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     /**
     @notice For public and whitelist mists, ensures mintee can only mint 1 or 2 tokens per txn
     */
-    modifier validNumOfTokens(uint8 numTokens) {
-        require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
-        _;
-    }
+    // modifier validNumOfTokens(uint8 numTokens) {
+    //     require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
+    //     _;
+    // }
 
     constructor(
         string memory name,
@@ -173,8 +173,8 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         payable
         whitelistMintOn
         allMintOn
-        validNumOfTokens(numTokens)
     {
+        require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
         require(numTokens + _currPublicID <= 9901, "Over token limit.");
 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
@@ -211,11 +211,13 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         payable
         publicMintOn
         allMintOn
-        validNumOfTokens(numTokens)
     {
+        require(numTokens <= 10 && numTokens > 0, "Invalid no. of tokens");
         // move the memory variable up here; reduces a read
         require(numTokens + _currPublicID <= 9901, "Over token limit.");
         require(0.08 ether * numTokens <= msg.value, "Invalid msg.value");
+
+
 
         uint256 currIndex = _currPublicID;
 
