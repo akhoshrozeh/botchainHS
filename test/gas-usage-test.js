@@ -37,69 +37,69 @@ describe('Gas usage on minting and transfers', async function () {
     //     // }
     // });
 
-    it('1 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    // it('1 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(1, eth);
-        }
-    });
-    it('2 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(1, eth);
+    //     }
+    // });
+    // it('2 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(2, eth);
-        }
-    });
-    it('3 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(2, eth);
+    //     }
+    // });
+    // it('3 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(3, eth);
-        }
-    });
-    it('4 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(3, eth);
+    //     }
+    // });
+    // it('4 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(4, eth);
-        }
-    });
-    it('5 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(4, eth);
+    //     }
+    // });
+    // it('5 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(5, eth);
-        }
-    });
-    it('6 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(5, eth);
+    //     }
+    // });
+    // it('6 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(6, eth);
-        }
-    });
-    it('7 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(6, eth);
+    //     }
+    // });
+    // it('7 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(7, eth);
-        }
-    });
-    it('8 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(7, eth);
+    //     }
+    // });
+    // it('8 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(8, eth);
-        }
-    });
-    it('9 mint', async function () {
-        const eth = {value: ethers.utils.parseEther("1")}
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(8, eth);
+    //     }
+    // });
+    // it('9 mint', async function () {
+    //     const eth = {value: ethers.utils.parseEther("1")}
 
-        for(let i = 0; i < 100; i++) {
-            await this.botz.connect(this.accounts[0]).mintSchoolBotz(9, eth);
-        }
-    });
+    //     for(let i = 0; i < 100; i++) {
+    //         await this.botz.connect(this.accounts[0]).mintSchoolBotz(9, eth);
+    //     }
+    // // });
     it('10 mint', async function () {
         const eth = {value: ethers.utils.parseEther("1")}
 
