@@ -49,7 +49,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
     mapping(address => uint) private _balances;
 
     // for i in balances[user]: userWeight += rarity[i] // say 5 is most rare with values [1, 5]
-    mapping(address => uint) private userWeight;
+    mapping(address => uint) private _userWeight;
 
     mapping (uint => bool) private _tokenIsStaked;
 
@@ -86,7 +86,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
     // also used to update rewards for a user (rewards[user])
     function earned(address account) public view returns (uint) {
         return
-            ((userWeight[account] *
+            ((_userWeight[account] *
                 (rewardPerToken() - _userRewardPerWeightPaid[account])) / 1e18) +
             _rewards[account];
     }
@@ -122,7 +122,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
             _balances[msg.sender] += 1;
 
             // ASSUMING that the rarity is a direct multipler (likely temporary);
-            userWeight[msg.sender] += rarities[i];
+            _userWeight[msg.sender] += rarities[i];
             _totalWeight +=  rarities[i];
 
             uint startTime = block.timestamp;
@@ -152,7 +152,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
             }
 
             // update l(u, t)
-            userWeight[msg.sender] -= s.tokenRarity;
+            _userWeight[msg.sender] -= s.tokenRarity;
             _totalWeight -= s.tokenRarity;
 
             _totalSupply -= 1;
@@ -200,7 +200,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
     }
 
     function getWeight(address user) public view returns (uint) {
-        return userWeight[user];
+        return _userWeight[user];
     }
 
     function getStake(uint id) public view returns (Stake memory) {
