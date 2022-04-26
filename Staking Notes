@@ -1,0 +1,12 @@
+Staking Specs/Rules:
+
+Each NFT staked (not the group when the stake() function is called, but each token) contains data about:
+    (1) it's rarity, which determines the tierYieldBonus and
+    (2) the commitment which determines commitmentYieldBonu which is only factored in reward after completed;
+
+If you unstake/withdraw before commitment honored:
+    (1) your rewards for that NFT are cut in half (lose 50%)
+        (a) this implies we need to keep track of rewards for each token
+            rewards[user] is the sum of rewards[tokenID] if ownerOf(tokenID) == user
+
+    
