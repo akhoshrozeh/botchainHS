@@ -9,7 +9,7 @@ contract Botz is ERC20, Ownable {
     constructor()
     ERC20("BOTZ20NAME", "BOTZ20SYM")
     {
-        // authorized[msg.sender] = true;
+        authorized[msg.sender] = true;
     }
 
     mapping (address => bool) authorized;
@@ -25,10 +25,6 @@ contract Botz is ERC20, Ownable {
 
     function unauthorize(address a) public onlyOwner {
         authorized[a] = false;
-    }
-
-    function isAuthorized(address a) public view returns (bool) {
-        return authorized[a];
     }
 
     // only the staking contract should be able to call this
