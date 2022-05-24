@@ -4,8 +4,11 @@ pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IArbToken";
 
-contract Botz is ERC20, Ownable {
+contract ArbBotzBank is ERC20, Ownable, IArbToken {
+
+    address public l1Address;
     constructor()
     ERC20("BOTZ20NAME", "BOTZ20SYM")
     {
