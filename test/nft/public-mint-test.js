@@ -6,7 +6,7 @@ const { MerkleTree } = require('merkletreejs');
 const provider = waffle.provider;
 
 // Public Minting:
-//     - can only mint <= 2 per call
+//     - can mint <= 10 per txn
 //     - public sale must be On
 //     - token values are [1,4000]
 //     - correct ether is being sent
@@ -39,9 +39,9 @@ describe('Public Minting', async function() {
     });
 
     it('Must send minimum eth price ', async function () {
-        const oneToken = {value: ethers.utils.parseEther("0.08")}
-        const twoToken = {value: ethers.utils.parseEther("0.16")}
-        const badOneToken = {value: ethers.utils.parseEther("0.079")}
+        const oneToken = {value: ethers.utils.parseEther("0.055")}
+        const twoToken = {value: ethers.utils.parseEther("0.110")}
+        const badOneToken = {value: ethers.utils.parseEther("0.054")}
         
         // Buying 1 token with no eth
         await expect(this.botz.connect(this.accounts[5]).mintSchoolBotz(1)).to.be.revertedWith("Invalid msg.value");
@@ -61,12 +61,13 @@ describe('Public Minting', async function() {
     
     
     it('Contract balance is updated correctly with each txn', async function () {
-        const oneToken = {value: ethers.utils.parseEther("0.08")}
+        const oneToken = {value: ethers.utils.parseEther("0.055")}
         // 3 tokens have been minted so far in this test group, so contract balance should be 0.24 eth
         // balance is in wei
         let balance = await provider.getBalance(this.botz.address);
         balance = ethers.utils.formatEther(balance);
-        expect(balance).to.equal('0.24');
+        expect(balance).to.equal('0.165');
+        expect(await this.botz.getPublicMintCount()).to.equal('3');
 
         // mint 100 more
         for(let i = 0; i < 100; i++) {
@@ -80,7 +81,7 @@ describe('Public Minting', async function() {
         // verify balance of contract == totalMints * 0.08
         balance = await provider.getBalance(this.botz.address);
         balance = ethers.utils.formatEther(balance);
-        expect(balance).to.equal('8.24');
+        expect(balance).to.equal('5.665');
     });
 
     // // this test takes about 2 minutes!

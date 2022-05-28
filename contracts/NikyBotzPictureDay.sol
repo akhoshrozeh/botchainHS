@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /// @title The ERC721 Contract for Niky Botz Picture Day
-contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
+contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     // Should always be between [1, 9901]
+    // Should always be between [1, 5456]
     uint256 private _currPublicID = 1;
 
     // should always be between [9901, 10001]
-    uint256 private _currReserveID = 9901;
+    // should always be between [5456, 5556]
+    uint256 private _currReserveID = 5456;
 
     bytes32 public whitelistRoot = "";
 
@@ -37,7 +39,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
     bool private _provenanceHashSet = false;
 
-    mapping(address => uint8) private _hasMinted;
+    mapping(address => uint) private _hasMinted;
 
     event ProvenanceHashSet(string provHash);
 
@@ -153,7 +155,8 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         allMintOn
         onlyRole(MANAGER_ROLE)
     {
-        require(numTokens + _currReserveID <= 10001, "Over reserve limit");
+        // was 10001
+        require(numTokens + _currReserveID <= 5556, "Over reserve limit");
 
         uint256 currReserveIndex = _currReserveID;
         for (uint256 i = 0; i < numTokens; i++) {
@@ -168,14 +171,14 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     @dev See https://github.com/miguelmota/merkletreejs-solidity for how to construct 'proof' on client side
     @param proof This should be a merkle proof that verifies msg.sender is a part of the merkle root (whitelist root)
     */
-    function mintFromWhitelist(uint8 numTokens, bytes32[] calldata proof)
+    function mintFromWhitelist(uint numTokens, bytes32[] calldata proof)
         external
         payable
         whitelistMintOn
         allMintOn
     {
         require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
-        require(numTokens + _currPublicID <= 9901, "Over token limit.");
+        require(numTokens + _currPublicID <= 5456, "Over token limit.");
 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(
@@ -183,7 +186,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
             "Invalid address"
         );
         require(
-            0.08 ether * numTokens <= msg.value,
+            0.055 ether * numTokens <= msg.value,
             "Invalid ether value sent."
         );
         require(
@@ -193,7 +196,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
 
         uint256 currIndex = _currPublicID;
         for (uint256 i = 0; i < numTokens; i++) {
-            if (currIndex <= 9900) {
+            if (currIndex <= 5455) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -206,7 +209,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     /**
     @notice Mints up to 2 tokens, each cost 0.1 eth
     */
-    function mintSchoolBotz(uint8 numTokens)
+    function mintSchoolBotz(uint numTokens)
         external
         payable
         publicMintOn
@@ -214,15 +217,15 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     {
         require(numTokens <= 10 && numTokens > 0, "Invalid no. of tokens");
         // move the memory variable up here; reduces a read
-        require(numTokens + _currPublicID <= 9901, "Over token limit.");
-        require(0.08 ether * numTokens <= msg.value, "Invalid msg.value");
+        require(numTokens + _currPublicID <= 5456, "Over token limit.");
+        require(0.055 ether * numTokens <= msg.value, "Invalid msg.value");
 
 
 
         uint256 currIndex = _currPublicID;
 
         for (uint256 i = 0; i < numTokens; i++) {
-            if (currIndex <= 9900) {
+            if (currIndex <= 5455) {
                 _safeMint(msg.sender, currIndex);
                 currIndex = currIndex + 1;
             }
@@ -245,7 +248,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
     @return number of tokens minted from reserves
     */
     function getReserveMintCount() public view returns (uint256) {
-        return _currReserveID - 9901;
+        return _currReserveID - 5456;
     }
 
     /**
@@ -327,7 +330,7 @@ contract NikyBotzPictureDay is ERC721, AccessControl, Ownable {
         public
         view
         virtual
-        override(ERC721, AccessControl)
+        override(ERC721Enumerable, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

@@ -26,8 +26,8 @@ describe('Whitelist', async function() {
     
 
     it('Whitelist address can mint <= 2 tokens', async function () {
-        const oneToken = {value: ethers.utils.parseEther("0.1")}
-        const twoToken = {value: ethers.utils.parseEther("0.2")}
+        const oneToken = {value: ethers.utils.parseEther("0.055")}
+        const twoToken = {value: ethers.utils.parseEther("0.110")}
 
         // const time = Math.floor(Date.now() / 1000);
         // await this.botz.connect(this.accounts[1]).setWhitelistTS(time - 1000, time + 2000);
@@ -72,8 +72,8 @@ describe('Whitelist', async function() {
     });
 
     it('Valid amount of eth sent when minting from whitelist', async function () {
-        const badOne = {value: ethers.utils.parseEther("0.079999")}
-        const badTwo = {value: ethers.utils.parseEther("0.159999")}
+        const badOne = {value: ethers.utils.parseEther("0.054")}
+        const badTwo = {value: ethers.utils.parseEther("0.109")}
 
         let addresses = Array();
         for(let i = 0; i < this.accounts.length; i++) {
