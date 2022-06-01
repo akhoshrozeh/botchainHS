@@ -1,21 +1,37 @@
 project todo
 
-- fuzzing
-- test coverage (line and branch)
-- NATSPEC comments
-- Optimization of gas/storage
-- walk through with Johann
-- example of using whitelist proof
-- should inherit erc721 or erc721tradable ??
-- test on rinkeby with opensea
+1: clone custom bridge repo then test it out
+2: adjust l1 and l2 tokens to botz banks and test again
+3: build cap on rewards given (l1 staking) to ensure 
+	- only can commit nft once
+4: l2 gambling contract
+	- ensure bets go until l2 botz bank is empty 
+	- game signs bidding transactions
 
 
-project fixes
+x: build token rarity verification (l1 staking) and test script for it
 
-- change constructor to pass in in-place string "BOTZ" for name and symbol
-	- adjust all describe() in test scripts
-- change all tests to expect() from assert()
-	- make sure using expect().to.equal() and NOT format of assert()
 
-- minimize require() and if statements 
-	- specifically the minting functions
+
+*****
+
+
+x- update erc721 (price and collection size) and tests
+x- write tests for erc721enumerable
+x- update commitment bonuses to be bounded by the supply
+x- create batched collectCommitmentbOnuses
+x- rewards cap (build on erc20)
+x- emergency transfer
+x- access control
+- 
+- write tests for staking
+x- create verification for token tiers in staking contract
+- finish erc20 that will be compatible with arbitrum 
+- make sure already deployed erc20 can be used in bridge after
+- deploy l1 token contract 
+
+
+
+****
+- review cs183 and cs161 !!!
+- update csm152a proposal

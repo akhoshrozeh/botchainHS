@@ -5,7 +5,10 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "hardhat/console.sol";
 // import "./Botz.sol";
 
 
@@ -13,7 +16,7 @@ interface Mintable {
     function mint(address account, uint amount) external;
 }
 
-contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
+contract PictureDayStaking is AccessControl, ERC721Holder, ReentrancyGuard  {
 
 
     // Botz contract
@@ -31,12 +34,16 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
 
     enum BCHSType {Tier1, Tier2, Tier3}
 
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+
 
     // total number of NFTs staked
     uint private _totalStakedTokens;
 
     // if true, the users can exchange rewards to Botz tokens
     bool private _mintingOn;
+
+    // if true, then staking, withdrawing, collecting is paused
     bool private _paused;
 
     // address to list of tokens address has staked currently
@@ -47,7 +54,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
 
     // user's address to their rewards
     // note: this is only updated with modifier updateRewards
-    //  !!!! these values are scaled UP by 10e5
+    //  NOTE: these values are scaled UP by 10e5
     mapping (address => uint) private _rewards;
 
     // check if token is staked in contract
@@ -71,9 +78,13 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
 
 
 
-    constructor(address _stakingToken, address _rewardsToken) {
+    constructor(address _stakingToken, address _rewardsToken, address admin) {
         stakingToken = IERC721(_stakingToken);
         rewardsToken = Mintable(_rewardsToken);
+
+
+        _setupRole(ADMIN_ROLE, admin);
+        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
         // commitment bonuses (percentages)
         // bonus = multiply totalWeeks * weeklyRate * _commitmentWeeksToBonus[weeks] / 100
@@ -96,7 +107,6 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         _tokenDailyRate[BCHSType.Tier1] = 500;  
         _tokenDailyRate[BCHSType.Tier2] = 400;  
         _tokenDailyRate[BCHSType.Tier3] = 250;  
-
     }
 
 
@@ -126,13 +136,14 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
     // params: tokens -> the erc721 token ids to be staked
     // commitments -> respective commitment options 
     // Note: this function can only be called from the website since it requires a signature verifying tiers of tokens
-    function stake(uint[] calldata tokens, BCHSType[] calldata tiers, uint[] calldata commitments) external notPaused nonReentrant updateReward(msg.sender) {
+    function stake(uint[] calldata tokens, BCHSType[] calldata tiers, uint[] calldata commitments, bytes calldata signature) external notPaused nonReentrant updateReward(msg.sender) {
         require(tokens.length > 0, "tokens.length <= 0");
         require(tokens.length == tiers.length, "tokens != rarities");
         require(tokens.length == commitments.length, "tokens != commitments");
         
+        // verify tiers with admin signature
+        require(_verifySignature(signature, tokens, tiers), "tier verification fail");  
 
-        // TODO: verify rarities proofs with signature from
         uint startTime = block.timestamp;
         
         // transfer tokens and update state
@@ -140,6 +151,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
             require(stakingToken.ownerOf(tokens[i]) == msg.sender, "staker!=owner");
             require(commitments[i] > 0 && commitments[i] <= 12, "invalid commitment");
             require(BCHSType(0) <= tiers[i] && tiers[i] <= BCHSType(2), "invalid tier");
+
 
             // move the token to staking contract
             stakingToken.safeTransferFrom(msg.sender, address(this), tokens[i]);
@@ -160,6 +172,15 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         
     }
 
+    function _verifySignature(bytes calldata signature, uint[] calldata tokenIds, BCHSType[] calldata tiers) private view returns (bool) {
+        bytes32 dataHash = keccak256(abi.encodePacked(tokenIds,tiers));
+        // console.logBytes32(dataHash);
+        bytes32 message = ECDSA.toEthSignedMessageHash(dataHash);
+        address recoveredAddress = ECDSA.recover(message, signature);
+        // console.log("recoverd address: ", recoveredAddress);
+        return hasRole(ADMIN_ROLE, recoveredAddress);
+    }
+
 
     // User removes stakes and collects commitment bonus if applicable
     function withdraw(uint[] calldata tokens) external notPaused nonReentrant updateReward(msg.sender) {
@@ -172,11 +193,12 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
             
             Stake memory s = _tokenIdToStake[tokens[i]];
 
-            bool commitmentCompleted = block.timestamp > s.stakeBeginTS + (s.commitment * 1 weeks) ? true : false;
+            bool commitmentCompleted = block.timestamp >= s.stakeBeginTS + (s.commitment * 1 weeks) ? true : false;
 
             // collect the commitment bonus when withdrawing
             if(s.commitment > 0 && !s.commitmentCollected && commitmentCompleted) {
-                _collectCommitmentBonus(s, tokenOwner, tokens[i]);
+                // console.log("**collecting commitment of token:", tokens[i]);
+                _collectCommitmentBonusFromWithdraw(s, tokenOwner, tokens[i]);
             } 
 
             delete _tokenIdToOwner[tokens[i]];
@@ -189,6 +211,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
             require(success, "couldnt get tokenIndex");
 
             // update list of tokens owner has; swap and pop
+            // length cant be zero since require(tokenOwner == msg.sender) wouldve failed
             _addressToTokenIds[msg.sender][tokenIndex] = currUserTokens[currUserTokens.length - 1];
             _addressToTokenIds[msg.sender].pop();
             
@@ -202,27 +225,34 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         emit Withdrawal(msg.sender, tokens);
     }
 
+
+    // what the public interacts with
+    function collectCommitmentBonuses(uint[] calldata tokenIds) public notPaused nonReentrant {
+        for(uint i; i < tokenIds.length; i++) {
+            require(msg.sender == _tokenIdToOwner[tokenIds[i]], "only owner collects");
+            _collectCommitmentBonus(tokenIds[i])    ;
+        }
+    }
    
 
 
     // usage: stakers who want to redeem their commitmentBonus rewards without unstaking
-    // note: 'redeem' doesnt mean mint erc20s. It means their _rewards balance is updated with the bonus
-    function collectCommitmentBonus(uint tokenId) public notPaused nonReentrant {
+    // note: 'redeem' does NOT mean mint erc20s. It means their _rewards balance is updated with the bonus
+    function _collectCommitmentBonus(uint tokenId) private {
         require(_tokenIsStaked[tokenId], "token not staked");
-        require(msg.sender == _tokenIdToOwner[tokenId], "only owner collects");
+        // require(msg.sender == _tokenIdToOwner[tokenId], "only owner collects");
         require(1 <= tokenId && tokenId <= 10000, "invalid tokenId");
  
         Stake memory s = _tokenIdToStake[tokenId];
-        require(s.commitment > 0, "comm=0");
         require(!s.commitmentCollected, "already collected");
+        require(s.commitment > 0, "comm=0");
 
         // check that commitment has been honored
-        bool commitmentCompleted = block.timestamp > s.stakeBeginTS + (s.commitment * 1 weeks) ? true : false;
+        bool commitmentCompleted = block.timestamp >= s.stakeBeginTS + (s.commitment * 1 weeks) ? true : false;
         require(commitmentCompleted, "comm not completed");
 
         // calculate bonus to be added to rewards
         uint bonus = s.commitment * 7 * _tokenDailyRate[s.tier] * _commitmentWeeksToBonus[s.commitment] * 10e5 / 100;
-
 
         // update stake commitment to be collected and write to storage
         s.commitmentCollected = true;
@@ -248,13 +278,12 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         _rewards[msg.sender] = 0;
 
         // scale up to since decimals = 18 on erc20 contract
-        reward = reward * (10 ** 18);
+        reward = reward * 10e18;
 
         rewardsToken.mint(msg.sender, reward);
 
         emit exchangedToBotz(msg.sender, reward);
     }
-
 
   
 
@@ -272,6 +301,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         return rewards;
     }
 
+    // used internally for withdrawal
     // cleans up storage for tokens after a token is withdrawed
     function _getTokenIndex(uint[] memory tokens, uint tokenId) internal pure returns(uint, bool) {
         for (uint i; i < tokens.length; i++) {
@@ -286,8 +316,8 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
     // needs to be very secure
     // *** only to be called by withdraw(int[])
     // doesnt mark as commitmentCollected since the stake will be deleted
-    function _collectCommitmentBonus(Stake memory s, address tokenOwner, uint tokenId) private {
-        require(msg.sender == address(this), "not called from withdraw()");
+    function _collectCommitmentBonusFromWithdraw(Stake memory s, address tokenOwner, uint tokenId) private {
+        // require(msg.sender == address(this), "not called from withdraw()");
         
         // divide by 100 since _commitmentWeeksToBonus is a percent
         uint bonus = s.commitment * 7 * _tokenDailyRate[s.tier] * _commitmentWeeksToBonus[s.commitment] * 10e5 / 100;
@@ -300,23 +330,24 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
 
 
     
-    // ************* OnlyOwner functions ************
-    function setRewardsToken(address newContract) public onlyOwner {
+    // ************* Only ADMIN functions ************
+    function setRewardsToken(address newContract) public onlyRole(ADMIN_ROLE) {
         rewardsToken = Mintable(newContract);
     }
 
-    function flipMintingState() public onlyOwner returns(bool) {
+    function flipMintingState() public onlyRole(ADMIN_ROLE) returns(bool) {
         _mintingOn = !_mintingOn;
         return _mintingOn;
     }
 
-    function flipPauseState() public onlyOwner returns (bool) {
+    function flipPauseState() public onlyRole(ADMIN_ROLE) returns (bool) {
         _paused = !_paused;
         return _paused;
     }
 
 
-    function adjustDailyRates(uint[] calldata rates) public onlyOwner {
+
+    function adjustDailyRates(uint[] calldata rates) public onlyRole(ADMIN_ROLE) {
         require(rates.length == 3, "invalid length");
         
         _tokenDailyRate[BCHSType.Tier1] = rates[0];  
@@ -324,7 +355,7 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         _tokenDailyRate[BCHSType.Tier3] = rates[2]; 
     }
 
-    function adjustCommitmentBonuses(uint[] calldata bonuses) public onlyOwner {
+    function adjustCommitmentBonuses(uint[] calldata bonuses) public onlyRole(ADMIN_ROLE) {
         require(bonuses.length == 12, "invalid length");
 
         for(uint i = 1; i <= bonuses.length; i++) {
@@ -332,11 +363,12 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         }
     }
      
-    // transfer all nfts back to owners
-    function emergencyTransfer(uint[] calldata tokenIds) public onlyOwner {
-        for(uint i; i < tokenIds.length; i++) {
-            stakingToken.transferFrom(address(this), _tokenIdToOwner[tokenIds[i]], tokenIds[i]);      
-        }
+    // this will be called serveral time by another, authorized, external contract if needed
+    // this is done
+    function emergencyTransfer(uint tokenId) public onlyRole(ADMIN_ROLE) {
+        address staker = _tokenIdToOwner[tokenId];
+        require(staker != address(0), "bad address");
+        stakingToken.transferFrom(address(this), staker, tokenId);      
     }
 
 
@@ -395,7 +427,6 @@ contract StakingRewards is Ownable, ERC721Holder, ReentrancyGuard  {
         require(_tokenIsStaked[tokenId], "token not staked");
         return _tokenIdToOwner[tokenId];
     }
-
 
 
 
