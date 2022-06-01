@@ -1,0 +1,163 @@
+[93m
+PictureDayStaking.exchangeToBotz() (PictureDayStaking.sol#270-286) performs a multiplication on the result of a division:
+	-reward = reward / 10e5 (PictureDayStaking.sol#275)
+	-reward = reward * 10e18 (PictureDayStaking.sol#281)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply[0m
+[93m
+Reentrancy in PictureDayStaking.stake(uint256[],PictureDayStaking.BCHSType[],uint256[],bytes) (PictureDayStaking.sol#139-173):
+	External calls:
+	- stakingToken.safeTransferFrom(msg.sender,address(this),tokens[i]) (PictureDayStaking.sol#157)
+	State variables written after the call(s):
+	- _addressToTokenIds[msg.sender].push(tokens[i]) (PictureDayStaking.sol#168)
+	- _tokenIdToStake[tokens[i]] = s (PictureDayStaking.sol#165)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1[0m
+[93m
+PictureDayStaking.collectCommitmentBonuses(uint256[]).i (PictureDayStaking.sol#231) is a local variable never initialized
+PictureDayStaking.stake(uint256[],PictureDayStaking.BCHSType[],uint256[],bytes).i (PictureDayStaking.sol#150) is a local variable never initialized
+PictureDayStaking.totalEarned().i (PictureDayStaking.sol#385) is a local variable never initialized
+PictureDayStaking._getTokenIndex(uint256[],uint256).i (PictureDayStaking.sol#307) is a local variable never initialized
+PictureDayStaking.withdraw(uint256[]).i (PictureDayStaking.sol#189) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables[0m
+[92m
+PictureDayStaking.stake(uint256[],PictureDayStaking.BCHSType[],uint256[],bytes) (PictureDayStaking.sol#139-173) has external calls inside a loop: require(bool,string)(stakingToken.ownerOf(tokens[i]) == msg.sender,staker!=owner) (PictureDayStaking.sol#151)
+PictureDayStaking.stake(uint256[],PictureDayStaking.BCHSType[],uint256[],bytes) (PictureDayStaking.sol#139-173) has external calls inside a loop: stakingToken.safeTransferFrom(msg.sender,address(this),tokens[i]) (PictureDayStaking.sol#157)
+PictureDayStaking.withdraw(uint256[]) (PictureDayStaking.sol#186-226) has external calls inside a loop: stakingToken.safeTransferFrom(address(this),msg.sender,tokens[i]) (PictureDayStaking.sol#222)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop[0m
+[92m
+Variable 'ECDSA.tryRecover(bytes32,bytes).r (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#62)' in ECDSA.tryRecover(bytes32,bytes) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#57-86) potentially used before declaration: r = mload(uint256)(signature + 0x20) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#79)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#pre-declaration-usage-of-local-variables[0m
+[92m
+Reentrancy in PictureDayStaking.stake(uint256[],PictureDayStaking.BCHSType[],uint256[],bytes) (PictureDayStaking.sol#139-173):
+	External calls:
+	- stakingToken.safeTransferFrom(msg.sender,address(this),tokens[i]) (PictureDayStaking.sol#157)
+	State variables written after the call(s):
+	- _tokenIdToOwner[tokens[i]] = msg.sender (PictureDayStaking.sol#166)
+	- _tokenIsStaked[tokens[i]] = true (PictureDayStaking.sol#161)
+	- _totalStakedTokens += 1 (PictureDayStaking.sol#160)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2[0m
+[92m
+Reentrancy in PictureDayStaking.exchangeToBotz() (PictureDayStaking.sol#270-286):
+	External calls:
+	- rewardsToken.mint(msg.sender,reward) (PictureDayStaking.sol#283)
+	Event emitted after the call(s):
+	- exchangedToBotz(msg.sender,reward) (PictureDayStaking.sol#285)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3[0m
+[92m
+PictureDayStaking.withdraw(uint256[]) (PictureDayStaking.sol#186-226) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp >= s.stakeBeginTS + (s.commitment * 604800) (PictureDayStaking.sol#196)
+PictureDayStaking._collectCommitmentBonus(uint256) (PictureDayStaking.sol#241-266) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(! s.commitmentCollected,already collected) (PictureDayStaking.sol#247)
+	- require(bool,string)(s.commitment > 0,comm=0) (PictureDayStaking.sol#248)
+	- block.timestamp >= s.stakeBeginTS + (s.commitment * 604800) (PictureDayStaking.sol#251)
+PictureDayStaking.exchangeToBotz() (PictureDayStaking.sol#270-286) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(reward > 0,no rewards) (PictureDayStaking.sol#272)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp[0m
+[92m
+ECDSA.tryRecover(bytes32,bytes) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#57-86) uses assembly
+	- INLINE ASM (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#67-71)
+	- INLINE ASM (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#78-81)
+ECDSA.tryRecover(bytes32,bytes32,bytes32) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#115-127) uses assembly
+	- INLINE ASM (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#122-125)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage[0m
+[92m
+Different versions of Solidity is used:
+	- Version used: ['0.8.10', '^0.8.0']
+	- ^0.8.0 (@openzeppelin/contracts/access/AccessControl.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/access/IAccessControl.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/security/ReentrancyGuard.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/token/ERC721/IERC721.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/utils/Context.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/utils/Strings.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+	- ^0.8.0 (@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+	- 0.8.10 (PictureDayStaking.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used[0m
+[92m
+PictureDayStaking.stake(uint256[],PictureDayStaking.BCHSType[],uint256[],bytes) (PictureDayStaking.sol#139-173) has costly operations inside a loop:
+	- _totalStakedTokens += 1 (PictureDayStaking.sol#160)
+PictureDayStaking.withdraw(uint256[]) (PictureDayStaking.sol#186-226) has costly operations inside a loop:
+	- delete _tokenIdToOwner[tokens[i]] (PictureDayStaking.sol#204)
+PictureDayStaking.withdraw(uint256[]) (PictureDayStaking.sol#186-226) has costly operations inside a loop:
+	- delete _tokenIdToStake[tokens[i]] (PictureDayStaking.sol#205)
+PictureDayStaking.withdraw(uint256[]) (PictureDayStaking.sol#186-226) has costly operations inside a loop:
+	- _totalStakedTokens -= 1 (PictureDayStaking.sol#218)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop[0m
+[92m
+Context._msgData() (@openzeppelin/contracts/utils/Context.sol#21-23) is never used and should be removed
+ECDSA.recover(bytes32,bytes32,bytes32) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#134-142) is never used and should be removed
+ECDSA.recover(bytes32,uint8,bytes32,bytes32) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#185-194) is never used and should be removed
+ECDSA.toEthSignedMessageHash(bytes) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#218-220) is never used and should be removed
+ECDSA.toTypedDataHash(bytes32,bytes32) (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#231-233) is never used and should be removed
+Strings.toHexString(uint256) (@openzeppelin/contracts/utils/Strings.sol#40-51) is never used and should be removed
+Strings.toString(uint256) (@openzeppelin/contracts/utils/Strings.sol#15-35) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code[0m
+[92m
+Pragma version^0.8.0 (@openzeppelin/contracts/access/AccessControl.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/access/IAccessControl.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/security/ReentrancyGuard.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/token/ERC20/IERC20.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/token/ERC721/IERC721.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/utils/Context.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/utils/Strings.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/utils/cryptography/ECDSA.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/utils/introspection/ERC165.sol#4) allows old versions
+Pragma version^0.8.0 (@openzeppelin/contracts/utils/introspection/IERC165.sol#4) allows old versions
+Pragma version0.8.10 (PictureDayStaking.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6/0.8.7
+solc-0.8.10 is not recommended for deployment
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity[0m
+[92m
+Event PictureDayStakingexchangedToBotz(address,uint256) (PictureDayStaking.sol#76) is not in CapWords
+Event PictureDayStakingexchangedToWrappedBotz(address,uint256) (PictureDayStaking.sol#77) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions[0m
+[92m
+grantRole(bytes32,address) should be declared external:
+	- AccessControl.grantRole(bytes32,address) (@openzeppelin/contracts/access/AccessControl.sol#130-132)
+revokeRole(bytes32,address) should be declared external:
+	- AccessControl.revokeRole(bytes32,address) (@openzeppelin/contracts/access/AccessControl.sol#143-145)
+renounceRole(bytes32,address) should be declared external:
+	- AccessControl.renounceRole(bytes32,address) (@openzeppelin/contracts/access/AccessControl.sol#161-165)
+onERC721Received(address,address,uint256,bytes) should be declared external:
+	- ERC721Holder.onERC721Received(address,address,uint256,bytes) (@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol#20-27)
+collectCommitmentBonuses(uint256[]) should be declared external:
+	- PictureDayStaking.collectCommitmentBonuses(uint256[]) (PictureDayStaking.sol#230-235)
+setRewardsToken(address) should be declared external:
+	- PictureDayStaking.setRewardsToken(address) (PictureDayStaking.sol#334-336)
+flipMintingState() should be declared external:
+	- PictureDayStaking.flipMintingState() (PictureDayStaking.sol#338-341)
+flipPauseState() should be declared external:
+	- PictureDayStaking.flipPauseState() (PictureDayStaking.sol#343-346)
+adjustDailyRates(uint256[]) should be declared external:
+	- PictureDayStaking.adjustDailyRates(uint256[]) (PictureDayStaking.sol#350-356)
+adjustCommitmentBonuses(uint256[]) should be declared external:
+	- PictureDayStaking.adjustCommitmentBonuses(uint256[]) (PictureDayStaking.sol#358-364)
+emergencyTransfer(uint256) should be declared external:
+	- PictureDayStaking.emergencyTransfer(uint256) (PictureDayStaking.sol#368-372)
+totalEarned() should be declared external:
+	- PictureDayStaking.totalEarned() (PictureDayStaking.sol#381-394)
+numStakedTokens() should be declared external:
+	- PictureDayStaking.numStakedTokens() (PictureDayStaking.sol#397-400)
+tokensStaked() should be declared external:
+	- PictureDayStaking.tokensStaked() (PictureDayStaking.sol#402-404)
+totalStaked() should be declared external:
+	- PictureDayStaking.totalStaked() (PictureDayStaking.sol#406-408)
+tokenToStake(uint256) should be declared external:
+	- PictureDayStaking.tokenToStake(uint256) (PictureDayStaking.sol#410-412)
+getRewards() should be declared external:
+	- PictureDayStaking.getRewards() (PictureDayStaking.sol#414-416)
+adjustedRewards() should be declared external:
+	- PictureDayStaking.adjustedRewards() (PictureDayStaking.sol#418-420)
+tokenIsStaked(uint256) should be declared external:
+	- PictureDayStaking.tokenIsStaked(uint256) (PictureDayStaking.sol#422-424)
+tokenToOwner(uint256) should be declared external:
+	- PictureDayStaking.tokenToOwner(uint256) (PictureDayStaking.sol#426-429)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#public-function-that-could-be-declared-external[0m
+PictureDayStaking.sol analyzed (14 contracts with 77 detectors), 66 result(s) found

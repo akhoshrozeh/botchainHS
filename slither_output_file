@@ -1,0 +1,175 @@
+Compilation warnings/errors on contracts/PictureDayStaking.sol:
+[91mError: Source "@openzeppelin/contracts/token/ERC721/IERC721.sol" not found: File not found.[0m
+ --> contracts/PictureDayStaking.sol:4:1:
+  |
+4 | import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[91mError: Source "@openzeppelin/contracts/token/ERC20/IERC20.sol" not found: File not found.[0m
+ --> contracts/PictureDayStaking.sol:5:1:
+  |
+5 | import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[91mError: Source "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol" not found: File not found.[0m
+ --> contracts/PictureDayStaking.sol:6:1:
+  |
+6 | import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[91mError: Source "@openzeppelin/contracts/security/ReentrancyGuard.sol" not found: File not found.[0m
+ --> contracts/PictureDayStaking.sol:7:1:
+  |
+7 | import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[91mError: Source "@openzeppelin/contracts/access/AccessControl.sol" not found: File not found.[0m
+ --> contracts/PictureDayStaking.sol:9:1:
+  |
+9 | import "@openzeppelin/contracts/access/AccessControl.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[91mError: Source "@openzeppelin/contracts/utils/cryptography/ECDSA.sol" not found: File not found.[0m
+  --> contracts/PictureDayStaking.sol:10:1:
+   |
+10 | import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 529, in _run_solc
+    ret: Dict = json.loads(stdout)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/slither/__main__.py", line 743, in main_impl
+    ) = process_all(filename, args, detector_classes, printer_classes)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/slither/__main__.py", line 73, in process_all
+    compilations = compile_all(target, **vars(args))
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/crytic_compile.py", line 637, in compile_all
+    compilations.append(CryticCompile(target, **kwargs))
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/crytic_compile.py", line 117, in __init__
+    self._compile(**kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/crytic_compile.py", line 548, in _compile
+    self._platform.compile(self, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 153, in compile
+    targets_json = _get_targets_json(compilation_unit, self._target, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 275, in _get_targets_json
+    return _run_solc(
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 533, in _run_solc
+    raise InvalidCompilation(f"Invalid solc compilation {stderr}")
+crytic_compile.platform.exceptions.InvalidCompilation: Invalid solc compilation Error: Source "@openzeppelin/contracts/token/ERC721/IERC721.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:4:1:
+  |
+4 | import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/token/ERC20/IERC20.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:5:1:
+  |
+5 | import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:6:1:
+  |
+6 | import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/security/ReentrancyGuard.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:7:1:
+  |
+7 | import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/access/AccessControl.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:9:1:
+  |
+9 | import "@openzeppelin/contracts/access/AccessControl.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/utils/cryptography/ECDSA.sol" not found: File not found.
+  --> contracts/PictureDayStaking.sol:10:1:
+   |
+10 | import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+None
+Error in contracts/PictureDayStaking.sol
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 529, in _run_solc
+    ret: Dict = json.loads(stdout)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/slither/__main__.py", line 743, in main_impl
+    ) = process_all(filename, args, detector_classes, printer_classes)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/slither/__main__.py", line 73, in process_all
+    compilations = compile_all(target, **vars(args))
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/crytic_compile.py", line 637, in compile_all
+    compilations.append(CryticCompile(target, **kwargs))
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/crytic_compile.py", line 117, in __init__
+    self._compile(**kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/crytic_compile.py", line 548, in _compile
+    self._platform.compile(self, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 153, in compile
+    targets_json = _get_targets_json(compilation_unit, self._target, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 275, in _get_targets_json
+    return _run_solc(
+  File "/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/crytic_compile/platform/solc.py", line 533, in _run_solc
+    raise InvalidCompilation(f"Invalid solc compilation {stderr}")
+crytic_compile.platform.exceptions.InvalidCompilation: Invalid solc compilation Error: Source "@openzeppelin/contracts/token/ERC721/IERC721.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:4:1:
+  |
+4 | import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/token/ERC20/IERC20.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:5:1:
+  |
+5 | import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:6:1:
+  |
+6 | import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/security/ReentrancyGuard.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:7:1:
+  |
+7 | import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/access/AccessControl.sol" not found: File not found.
+ --> contracts/PictureDayStaking.sol:9:1:
+  |
+9 | import "@openzeppelin/contracts/access/AccessControl.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error: Source "@openzeppelin/contracts/utils/cryptography/ECDSA.sol" not found: File not found.
+  --> contracts/PictureDayStaking.sol:10:1:
+   |
+10 | import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+

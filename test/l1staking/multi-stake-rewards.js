@@ -247,7 +247,7 @@ describe('Multi Staking, Different Tiers Rewards Check', async function() {
             console.log("Passed round ", k);
         }        
 
-    });
+    }).timeout(10000000);
 
 
 

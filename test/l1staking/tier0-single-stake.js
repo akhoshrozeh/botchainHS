@@ -158,7 +158,7 @@ describe('Tier 0: Earned and Total Rewards Correct', async function() {
 });
 
 
-describe('Tier 0: Earned and Total Rewards Correct ', async function() {
+describe('Reset network... ', async function() {
     before('get factories', async function () {
         await hre.network.provider.send("hardhat_reset")
         // * Deploy all three contracts
@@ -238,7 +238,7 @@ describe('Tier 0: Earned and Total Rewards Correct ', async function() {
             await this.nft.connect(this.accounts[i]).mintSchoolBotz(1, oneTokens);   
             expect(await this.nft.balanceOf(this.staking.address)).to.equal(0);
             expect(await this.nft.balanceOf(this.accounts[i].address)).to.equal(1);
-            signatures.push(await createSignature([i+1], [0], this.accounts[0]));
+            signatures.push(createSignature([i+1], [0], this.accounts[0]));
         }
 
         let sig = createSignature()
@@ -262,7 +262,7 @@ describe('Tier 0: Earned and Total Rewards Correct ', async function() {
             await this.staking.connect(this.accounts[i]).stake([i+1],[0], [i+1], signatures[i]);
             expect(await this.staking.connect(this.accounts[i]).numStakedTokens()).to.equal(1);
             
-            console.log(i+1, 'Weeks Committed ');
+            // console.log(i+1, 'Weeks Committed ');
 
             // account[i] stakes with commitment of week i+1
             // go through each week, up to weeks commited
@@ -283,8 +283,8 @@ describe('Tier 0: Earned and Total Rewards Correct ', async function() {
                 // is earning correct amount weekly
                 expect(real).to.eql(expected);
 
-                console.log("real:\t ", real);
-                console.log("expected:", expected);
+                // console.log("real:\t ", real);
+                // console.log("expected:", expected);
 
                 // try to collect but reverts because not enough time
                 if(j < i) {
@@ -307,7 +307,7 @@ describe('Tier 0: Earned and Total Rewards Correct ', async function() {
         console.log('totals:', totals);
         let expTots = rewardChart[2][0];
         expTots.shift();
-        console.log('rewardsChart tier2 totals:', expTots);
+        // console.log('rewardsChart tier0 totals:', expTots);
         // reward chart contains week 0
         expect(totals).to.eql(expTots);
 

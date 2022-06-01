@@ -173,8 +173,8 @@ describe('Tier 2: Earned and Total Rewards Correct ', async function() {
                 expect(real).to.eql(expected);
     
                 
-                console.log("real:\t ", real);
-                console.log("expected:", expected);
+                // console.log("real:\t ", real);
+                // console.log("expected:", expected);
     
                 // try to collect but reverts because not enough time
                 if(j < i) {

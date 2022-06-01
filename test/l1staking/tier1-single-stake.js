@@ -178,8 +178,8 @@ describe('Tier 1: Earned and Total Rewards Correct ', async function() {
                 // is earning correct amount weekly
                 expect(real).to.eql(expected);
     
-                console.log("real:\t ", real);
-                console.log("expected:", expected);
+                // console.log("real:\t ", real);
+                // console.log("expected:", expected);
     
                 // try to collect but reverts because not enough time
                 if(j < i) {
@@ -202,7 +202,7 @@ describe('Tier 1: Earned and Total Rewards Correct ', async function() {
         console.log('totals:', totals);
         let expTots = rewardChart[2][1];
         expTots.shift();
-        console.log('rewardsChart tier2 totals:', expTots);
+        console.log('rewardsChart tier1 totals:', expTots);
         // reward chart contains week 0
         expect(totals).to.eql(expTots);
     

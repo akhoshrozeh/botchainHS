@@ -5,6 +5,7 @@ project\ todo
 misc
 coverage
 coverage.json
+testToolsOutput
 
 #Hardhat files
 cache

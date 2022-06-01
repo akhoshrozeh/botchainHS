@@ -300,14 +300,14 @@ describe('Minting max', async function() {
 
         // wait a year
         currTimestamp += timeTilOver950 + weekTime + 2;
-        console.log('ts: ', currTimestamp);
-        console.log('timeTil: ', timeTilOver950);
+        // console.log('ts: ', currTimestamp);
+        // console.log('timeTil: ', timeTilOver950);
         await network.provider.send("evm_mine", [currTimestamp]);
 
         let totEarned = await this.staking.connect(this.accounts[10]).totalEarned()/ (10e5)
         let expectedTotEarned = 950000000 + rewardChart[0][0][1] * 10;
-        console.log("totEArned: ", totEarned);
-        console.log('expected: ', expectedTotEarned);
+        // console.log("totEArned: ", totEarned);
+        // console.log('expected: ', expectedTotEarned);
 
         expect(totEarned).to.equal(expectedTotEarned);
 
@@ -323,10 +323,10 @@ describe('Minting max', async function() {
         
         // verify erc20 balance
         // scale down 18 decimals
-       console.log('erc20 bal: ', await this.botz.balanceOf(this.accounts[10].address));
-       console.log('erc20 bal div: ', await this.botz.balanceOf(this.accounts[10].address) / (10e18));
+    //    console.log('erc20 bal: ', await this.botz.balanceOf(this.accounts[10].address));
+    //    console.log('erc20 bal div: ', await this.botz.balanceOf(this.accounts[10].address) / (10e18));
         expect( (await this.botz.balanceOf(this.accounts[10].address)) / (10e18)).to.equal(950000000);
-        console.log( (await this.botz.balanceOf(this.accounts[10].address)) / (10e18));
+        // console.log( (await this.botz.balanceOf(this.accounts[10].address)) / (10e18));
 
         // earn some more rewards
         currTimestamp += weekTime;
@@ -337,5 +337,13 @@ describe('Minting max', async function() {
 
 
     });
+
+    it('L1 Botz authorization', async function() {
+        expect(await this.botz.isAuthorized(this.staking.address)).to.equal(true);
+        await expect(this.botz.connect(this.accounts[1]).unauthorize(this.staking.address)).to.be.reverted;
+        await this.botz.connect(this.accounts[0]).unauthorize(this.staking.address);
+        expect(await this.botz.isAuthorized(this.staking.address)).to.equal(false);
+
+    })
     
 });
