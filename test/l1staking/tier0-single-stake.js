@@ -241,7 +241,7 @@ describe('Reset network... ', async function() {
             signatures.push(createSignature([i+1], [0], this.accounts[0]));
         }
 
-        let sig = createSignature()
+
 
         const weekTime = 604800;
         let currTimestamp = 2000000000;

@@ -8,11 +8,9 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /// @title The ERC721 Contract for Niky Botz Picture Day
 contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
-    // Should always be between [1, 9901]
     // Should always be between [1, 5456]
     uint256 private _currPublicID = 1;
 
-    // should always be between [9901, 10001]
     // should always be between [5456, 5556]
     uint256 private _currReserveID = 5456;
 
@@ -76,13 +74,6 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         _;
     }
 
-    /**
-    @notice For public and whitelist mists, ensures mintee can only mint 1 or 2 tokens per txn
-    */
-    // modifier validNumOfTokens(uint8 numTokens) {
-    //     require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
-    //     _;
-    // }
 
     constructor(
         string memory name,
@@ -155,7 +146,6 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         allMintOn
         onlyRole(MANAGER_ROLE)
     {
-        // was 10001
         require(numTokens + _currReserveID <= 5556, "Over reserve limit");
 
         uint256 currReserveIndex = _currReserveID;
@@ -216,7 +206,6 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         allMintOn
     {
         require(numTokens <= 10 && numTokens > 0, "Invalid no. of tokens");
-        // move the memory variable up here; reduces a read
         require(numTokens + _currPublicID <= 5456, "Over token limit.");
         require(0.055 ether * numTokens <= msg.value, "Invalid msg.value");
 

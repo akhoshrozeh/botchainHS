@@ -2,7 +2,8 @@ require("@nomiclabs/hardhat-waffle");
 require('hardhat-contract-sizer');
 require('solidity-coverage')
 require("hardhat-gas-reporter");
-const dotenv = require('dotenv');
+const dotenv = require('dotenv')
+
 require("@nomiclabs/hardhat-etherscan");
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -15,7 +16,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-dotenv.config();
+dotenv.config()
+
 const privKey = process.env.PRIV_KEY;
 const infuraURL = process.env.INFURA_URL;
 
@@ -29,13 +31,12 @@ module.exports = {
   solidity: "0.8.10",
 
   networks: {
-  //   rinkeby: {
-  //     url: infuraURL,
-  //     accounts: [privKey]
-  //   }
-  // }, 
-  // etherscan: {
-  //   apiKey: process.env.ETHERSCAN_KEY
-  // }
+    rinkeby: {
+      url: infuraURL,
+      accounts: [privKey]
+    }
+  }, 
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY
   }
 };

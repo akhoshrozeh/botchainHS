@@ -10,8 +10,12 @@ contract Botz is ERC20, Ownable {
     // Cap is 950,000,000 
     uint constant private _cap = 950000000 * (10e18);
 
+    // testnet has 9500
+    // uint constant private _cap = 9500 * (10e18);
+    // uint private immutable _cap;
+
     constructor()
-    ERC20("BOTZ20NAME", "BOTZ20SYM")
+    ERC20("BotzCoins", "BOTZ")
     {
     }
 
@@ -44,18 +48,23 @@ contract Botz is ERC20, Ownable {
         require(totSupply < _cap, "total supply minted");
         
         // not enough to mint 'amount' but still some tokens can be minted
+        // THIS BLOCK SHOULD BE RAN ONLY ONCE EVER
         if (totSupply + amount > _cap) {
             // ! safe math in earlier verison
             uint maxAmount = _cap - totSupply;
             assert(maxAmount <= amount);
             _mint(account, maxAmount);
-            assert(ERC20.totalSupply() <= _cap);
+            assert(ERC20.totalSupply() == _cap);
         }
 
         else {
             _mint(account, amount);
             assert(ERC20.totalSupply() <= _cap);
         }
+    }
+
+    function cap() public view returns (uint) {
+        return _cap;
     }
 
 }
