@@ -5,6 +5,15 @@ const keccak256 = require('keccak256');
 const { MerkleTree } = require('merkletreejs');
 const provider = waffle.provider;
 
+// converts array of BigNumbers to regular numbers
+function bigToNorm(x) {
+    let res = []
+    for(let i  = 0; i < x.length; i++) {
+        res.push(x[i].toNumber());
+    }
+    return res;
+}
+
 describe('Enumerable', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
@@ -63,11 +72,29 @@ describe('Enumerable', async function() {
         
         expect(expected_buckets).to.eql(actual_buckets);
         
-        // console.log(expected_buckets);
-        // console.log(actual_buckets);
+        // console.log("expected: ", expected_buckets);
+        // console.log("old: ", actual_buckets);
+
+        // using getTokensOfOwner(address)
+        actual_buckets = [];
+        for(let i = 0; i < 10; i++) {
+            actual_buckets.push(bigToNorm(await this.botz.getTokensOfOwner(this.accounts[i].address)));
+        }
+
+        // console.log("new: ", actual_buckets)
+
+        expect(actual_buckets).to.eql(expected_buckets);
+
+
 
         
     });
+
+
+    // it('getTokensOfOwner (returns all tokens at once)', async function() {
+    //     await hre.network.provider.send("hardhat_reset");
+
+    // })
 
 
 

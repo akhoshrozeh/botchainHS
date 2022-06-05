@@ -248,6 +248,19 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     }
 
     /**
+    @return tokens of owned by 'usr'
+    */
+    function getTokensOfOwner(address usr) public view returns (uint[] memory) {
+        uint length = balanceOf(usr);
+        uint[] memory ownedTokens = new uint[](length);
+        for(uint i; i < length; i++) {
+            ownedTokens[i] = (tokenOfOwnerByIndex(usr, i));
+        }
+
+        return ownedTokens;
+    }
+
+    /**
     @return the whitelist root (merkle root)
     */
     function getWhitelistRoot() public view returns (bytes32) {
