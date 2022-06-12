@@ -454,6 +454,20 @@ contract PictureDayStaking is AccessControl, ERC721Holder, ReentrancyGuard {
         return totalRewards;
     }
 
+    // returns all the stakes of a user
+    function getStakes(address user) public view returns (Stake[] memory) {
+        uint[] memory tokenIds = _addressToTokenIds[user];
+        uint len = tokenIds.length;
+        Stake[] memory stakes = new Stake[](len);
+
+        for (uint i; i < len; i++) {
+            stakes[i] = tokenToStake(tokenIds[i]);
+        }
+
+        return stakes;
+
+    }
+
     function numStakedTokens() public view returns (uint256) {
         return _addressToTokenIds[msg.sender].length;
     }

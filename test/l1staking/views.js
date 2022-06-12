@@ -150,6 +150,14 @@ describe('Views', async function() {
         
     });
 
+    it('getStakes', async function() {
+        const stakes1 = await this.staking.getStakes(this.accounts[5].address);
+        const stakes2 = await this.staking.getStakes(this.accounts[10].address);
+
+        console.log('stakes1', stakes1);
+        console.log('stakes2', stakes2);
+    });
+
     it('totalStaked', async function() {
         expect(await this.staking.totalStaked()).to.equal(10);
     });
