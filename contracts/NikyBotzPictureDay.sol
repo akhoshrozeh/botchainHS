@@ -1,18 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /// @title The ERC721 Contract for Niky Botz Picture Day
-contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
-    // Should always be between [1, 5456]
-    uint256 private _currPublicID = 1;
-
-    // should always be between [5456, 5556]
-    uint256 private _currReserveID = 5456;
+contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
 
     uint256 private _price = 0.055 ether;
 
@@ -27,6 +23,8 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     string public provenanceHash = "";
 
     string private _customBaseURI = "";
+
+    uint256 private _reserveMintCount;
 
     // Must be true for any minting to possibly occur
     bool private _allMintOn = false;
@@ -83,7 +81,7 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         string memory customBaseURI,
         address multisig,
         address sysadmin
-    ) ERC721(name, symbol) {
+    ) ERC721A(name, symbol) {
         _customBaseURI = customBaseURI;
 
         _setupRole(OWNER_ROLE, multisig);
@@ -102,9 +100,6 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         transferOwnership(multisig);
     }
 
-    fallback() external payable {}
-
-    receive() external payable {}
 
     /**
     @notice This function can only be set once. This is to ensure metadata integrity before any sales begin
@@ -141,21 +136,18 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
 
     /**
     @notice Mints up to a max. of 100 tokens (by managers)
-    @dev The token ids for these resevered are [5901, 6000]
     */
-    function mintReserveSchoolBotz(uint256 numTokens, address mintToAddress)
+    function mintReserveSchoolBotz(address mintToAddress, uint256 numTokens)
         external
         allMintOn
         onlyRole(MANAGER_ROLE)
     {
-        require(numTokens + _currReserveID <= 5556, "Over reserve limit");
+        require(numTokens + totalSupply() <= 5555, "Over token limit");
+        require(numTokens + _reserveMintCount <= 100, "Over reserve limit");
 
-        uint256 currReserveIndex = _currReserveID;
-        for (uint256 i = 0; i < numTokens; i++) {
-            _safeMint(mintToAddress, currReserveIndex);
-            currReserveIndex = currReserveIndex + 1;
-        }
-        _currReserveID = currReserveIndex;
+        _reserveMintCount += numTokens;
+        _safeMint(mintToAddress, numTokens);
+
     }
 
     /*
@@ -170,7 +162,7 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         allMintOn
     {
         require(numTokens == 1 || numTokens == 2, "Invalid no. of tokens");
-        require(numTokens + _currPublicID <= 5456, "Over token limit.");
+        require(numTokens + totalSupply() <= 5555, "Over token limit.");
 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(
@@ -186,15 +178,8 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
             "Whitelist mint limit"
         );
 
-        uint256 currIndex = _currPublicID;
-        for (uint256 i = 0; i < numTokens; i++) {
-            if (currIndex <= 5455) {
-                _safeMint(msg.sender, currIndex);
-                currIndex = currIndex + 1;
-            }
-        }
+        _safeMint(msg.sender, numTokens);
 
-        _currPublicID = currIndex;
         _hasMinted[msg.sender] += numTokens;
     }
 
@@ -208,21 +193,11 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         allMintOn
     {
         require(numTokens > 0, "Invalid no. of tokens");
-        require(numTokens + _currPublicID <= 5456, "Over token limit.");
+        require(numTokens + totalSupply() <= 5555, "Over token limit.");
         require(_price * numTokens <= msg.value, "Invalid msg.value");
 
+        _safeMint(msg.sender, numTokens);
 
-
-        uint256 currIndex = _currPublicID;
-
-        for (uint256 i = 0; i < numTokens; i++) {
-            if (currIndex <= 5455) {
-                _safeMint(msg.sender, currIndex);
-                currIndex = currIndex + 1;
-            }
-        }
-
-        _currPublicID = currIndex;
     }
 
     /**
@@ -235,37 +210,21 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         require(sent, "Failed to send Ether");
     }
 
-    /**
-    @return number of tokens minted from reserves
-    */
-    function getReserveMintCount() public view returns (uint256) {
-        return _currReserveID - 5456;
-    }
 
-    /**
-    @return number of tokens minted from whitlist and public
-    */
-    function getPublicMintCount() public view returns (uint256) {
-        return _currPublicID - 1;
-    }
+    function _startTokenId() internal view override returns (uint256) {
+        return 1;
+    } 
+
+
 
     function getPrice() public view returns (uint256) {
         return _price;
     }
-    
 
-    /**
-    @return tokens of owned by 'usr'
-    */
-    function getTokensOfOwner(address usr) public view returns (uint[] memory) {
-        uint length = balanceOf(usr);
-        uint[] memory ownedTokens = new uint[](length);
-        for(uint i; i < length; i++) {
-            ownedTokens[i] = (tokenOfOwnerByIndex(usr, i));
-        }
-
-        return ownedTokens;
+    function getReserveMintCount() public view returns (uint) {
+        return _reserveMintCount;
     }
+    
 
     /**
     @return the whitelist root (merkle root)
@@ -343,7 +302,7 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         public
         view
         virtual
-        override(ERC721Enumerable, AccessControl)
+        override(ERC721A, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

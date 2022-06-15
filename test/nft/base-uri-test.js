@@ -34,30 +34,30 @@ describe('Base URI', async function() {
 
     it('Token URIs are baseURI + tokenID', async function () {
         console.log("base uri:", await this.botz.baseTokenURI());
-        for(let i = 0; i < 20; i++) {
-            let tokenId = i+5901;
-            await this.botz.connect(this.accounts[2]).mintReserveSchoolBotz(1, this.accounts[3].address);
-            await expect(await this.botz.tokenURI(tokenId)).to.equal('ipfs://example-dir.com/'+(tokenId));
+
+        await this.botz.connect(this.accounts[2]).mintReserveSchoolBotz(this.accounts[3].address, 20);
+
+        for(let i = 1; i <= 20; i++) {
+            await expect(await this.botz.tokenURI(i)).to.equal('ipfs://example-dir.com/'+(i));
         }
     
         expect(await this.botz.balanceOf(this.accounts[3].address)).to.equal(20);
+        expect(await this.botz.totalSupply()).to.equal(20);
         expect(await this.botz.getReserveMintCount()).to.equal(20);
 
         
     });
 
     it('Changing baseURI changes tokenURI for already minted tokens', async function () {
-        for(let i = 0; i < 20; i++) {
-            let tokenId = i+5901;
-            await expect(await this.botz.tokenURI(tokenId)).to.equal('ipfs://example-dir.com/'+(tokenId));
+        for(let i = 1; i <= 20; i++) {
+            await expect(await this.botz.tokenURI(i)).to.equal('ipfs://example-dir.com/'+(i));
         }
     
         expect(await this.botz.balanceOf(this.accounts[3].address)).to.equal(20);
         expect(await this.botz.getReserveMintCount()).to.equal(20);
         await this.botz.connect(this.accounts[2]).setBaseTokenURI("ipfs://new_base_uri.com/");
-        for(let i = 0; i < 20; i++) {
-            let tokenId = i+5901;
-            await expect(await this.botz.tokenURI(tokenId)).to.equal('ipfs://new_base_uri.com/'+(tokenId));
+        for(let i = 1; i <= 20; i++) {
+            await expect(await this.botz.tokenURI(i)).to.equal('ipfs://new_base_uri.com/'+(i));
         }
     });
 

@@ -46,10 +46,10 @@ describe('Whitelist', async function() {
         await this.botz.connect(this.accounts[1]).setWhitelistRoot(rootHash);
 
         await this.botz.connect(this.accounts[6]).mintFromWhitelist(1, proof, oneToken);
-        expect(await this.botz.getPublicMintCount()).to.equal(1);
+        expect(await this.botz.totalSupply()).to.equal(1);
         
         await this.botz.connect(this.accounts[6]).mintFromWhitelist(1, proof, oneToken);
-        expect(await this.botz.getPublicMintCount()).to.equal(2);
+        expect(await this.botz.totalSupply()).to.equal(2);
         
         await expect(this.botz.connect(this.accounts[6]).mintFromWhitelist(1, proof, oneToken)).to.be.revertedWith('Whitelist mint limit');
 
@@ -62,11 +62,11 @@ describe('Whitelist', async function() {
         await this.botz.connect(this.accounts[1]).setWhitelistRoot(rootHash);
 
         await this.botz.connect(this.accounts[15]).mintFromWhitelist(1, proof2, oneToken);
-        expect(await this.botz.getPublicMintCount()).to.equal(3);
+        expect(await this.botz.totalSupply()).to.equal(3);
 
         
         await expect(this.botz.connect(this.accounts[15]).mintFromWhitelist(2, proof2, twoToken)).to.be.revertedWith('Whitelist mint limit');
-        expect(await this.botz.getPublicMintCount()).to.equal(3);
+        expect(await this.botz.totalSupply()).to.equal(3);
         
 
     });
@@ -96,7 +96,7 @@ describe('Whitelist', async function() {
 
     it('Correct tokenIDs exist after minting', async function () {
         // 3 tokens have already 
-        expect(await this.botz.getPublicMintCount()).to.equal(3);
+        expect(await this.botz.totalSupply()).to.equal(3);
 
         // check the first 3 of botz contract
         expect(await this.botz.ownerOf(1)).to.equal(this.accounts[6].address);
@@ -136,15 +136,15 @@ describe('Whitelist', async function() {
             const leaf = keccak256(addresses[i])
             const proof = mt.getHexProof(leaf);
 
-            await expect(this.botz2.ownerOf(i)).to.be.revertedWith("ERC721: owner query for nonexistent token");
-            await expect(this.botz2.ownerOf(i+1)).to.be.revertedWith("ERC721: owner query for nonexistent token");
+            await expect(this.botz2.ownerOf(i)).to.be.revertedWith("OwnerQueryForNonexistentToken()");
+            await expect(this.botz2.ownerOf(i+1)).to.be.revertedWith("OwnerQueryForNonexistentToken()");
 
             await this.botz2.connect(this.accounts[i]).mintFromWhitelist(2, proof, twoToken);
 
             expect(await this.botz2.ownerOf(i)).to.equal(this.accounts[i].address);
             expect(await this.botz2.ownerOf(i+1)).to.equal(this.accounts[i].address);
 
-            expect(await this.botz2.getPublicMintCount()).to.equal(i+1);
+            expect(await this.botz2.totalSupply()).to.equal(i+1);
         }
 
 

@@ -14,7 +14,7 @@ function bigToNorm(x) {
     return res;
 }
 
-describe('Enumerable', async function() {
+describe('Queryable', async function() {
     before('get factories', async function () {
         this.factory = await hre.ethers.getContractFactory('NikyBotzPictureDay')
         this.accounts = await hre.ethers.getSigners();
@@ -53,24 +53,27 @@ describe('Enumerable', async function() {
             expect(await this.botz.balanceOf(this.accounts[i].address)).to.equal(25);
         }    
         
-        let actual_buckets = []
-        for(j = 0; j < 10; j++) {
-            let balance = await this.botz.balanceOf(this.accounts[j].address);
-            let owner = this.accounts[j].address;
+        // let actual_buckets = []
+        // for(j = 0; j < 10; j++) {
+        //     let balance = await this.botz.balanceOf(this.accounts[j].address);
+        //     let owner = this.accounts[j].address;
             
-            // console.log("balance: ", balance.toNumber());
-            // console.log("owner: ", owner);
-            // console.log("owned tokens: ");
+        //     // console.log("balance: ", balance.toNumber());
+        //     // console.log("owner: ", owner);
+        //     // console.log("owned tokens: ");
             
-            let temp = []
-            for(let i = 0; i <= balance-1; i++) {
-                temp.push((await this.botz.tokenOfOwnerByIndex(owner, i)).toNumber());
-            }
+        //     // let temp = []
+        //     // for(let i = 0; i <= balance-1; i++) {
+        //     //     temp.push((await this.botz.tokenOfOwnerByIndex(owner, i)).toNumber());
+        //     // }
+
+        //     let temp = await this.botz.tokensOfOwner(owner);
+
             
-            actual_buckets.push(temp);
-        }
+        //     actual_buckets.push(temp);
+        // }
         
-        expect(expected_buckets).to.eql(actual_buckets);
+        // expect(expected_buckets).to.eql(actual_buckets);
         
         // console.log("expected: ", expected_buckets);
         // console.log("old: ", actual_buckets);
@@ -78,8 +81,10 @@ describe('Enumerable', async function() {
         // using getTokensOfOwner(address)
         actual_buckets = [];
         for(let i = 0; i < 10; i++) {
-            actual_buckets.push(bigToNorm(await this.botz.getTokensOfOwner(this.accounts[i].address)));
+            actual_buckets.push(bigToNorm(await this.botz.tokensOfOwner(this.accounts[i].address)));
         }
+
+        console.log("actual buckets: ", actual_buckets);
 
         // console.log("new: ", actual_buckets)
 

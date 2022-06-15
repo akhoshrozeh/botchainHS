@@ -391,7 +391,7 @@ describe('Multi Staking, Different Tiers Rewards Check', async function() {
 
             
 
-            console.log("Passed round ", k);
+            console.log("\t\tPassed round ", k);
             // console.log('*****************');
         }        
 

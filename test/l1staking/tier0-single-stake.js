@@ -142,7 +142,7 @@ describe('Tier 0: Earned and Total Rewards Correct', async function() {
 
 
         // try to stake, but fails since user hasnt approved the staking contract to transfer tokens
-        await expect(this.staking.connect(this.accounts[0]).stake(tokens, tiers, commitments, sig)).to.be.revertedWith("ERC721: transfer caller is not owner nor approved");
+        await expect(this.staking.connect(this.accounts[0]).stake(tokens, tiers, commitments, sig)).to.be.revertedWith("TransferCallerNotOwnerNorApproved()");
         
         await this.nft.connect(this.accounts[0]).setApprovalForAll(this.staking.address, true);
         

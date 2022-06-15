@@ -48,7 +48,7 @@ describe('Minting control', async function () {
         expect(await this.botz.getMintState()).to.eql([false,false,false]);
 
         const oneToken = {value: ethers.utils.parseEther("0.1")};
-        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address)).to.be.revertedWith("All minting off");
+        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1)).to.be.revertedWith("All minting off");
         await expect(this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("Public minting off");
         await expect(this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken)).to.be.revertedWith("Whitelist minting off");
     });
@@ -58,7 +58,7 @@ describe('Minting control', async function () {
         expect(await this.botz.getMintState()).to.eql([false,false,true]);
         
         const oneToken = {value: ethers.utils.parseEther("0.1")};
-        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address)).to.be.revertedWith("All minting off");
+        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1)).to.be.revertedWith("All minting off");
         await expect(this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("Public minting off");
         await expect(this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken)).to.be.revertedWith("All minting off");
         
@@ -70,7 +70,7 @@ describe('Minting control', async function () {
         expect(await this.botz.getMintState()).to.eql([false,true,false]);
         
         const oneToken = {value: ethers.utils.parseEther("0.1")};
-        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address)).to.be.revertedWith("All minting off");
+        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1)).to.be.revertedWith("All minting off");
         await expect(this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("All minting off");
         await expect(this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken)).to.be.revertedWith("Whitelist minting off");
         await this.botz.connect(this.accounts[0]).flipPublicMintState();
@@ -82,7 +82,7 @@ describe('Minting control', async function () {
         expect(await this.botz.getMintState()).to.eql([false,true,true]);
         
         const oneToken = {value: ethers.utils.parseEther("0.1")};
-        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address)).to.be.revertedWith("All minting off");
+        await expect(this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1)).to.be.revertedWith("All minting off");
         await expect(this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("All minting off");
         await expect(this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken)).to.be.revertedWith("All minting off");
 
@@ -97,7 +97,7 @@ describe('Minting control', async function () {
         const oneToken = {value: ethers.utils.parseEther("0.1")};
 
         // verify reserve minting now works
-        await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address);
+        await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1);
         expect(await this.botz.getReserveMintCount()).to.equal(1);
 
         await expect(this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("Public minting off");
@@ -114,11 +114,11 @@ describe('Minting control', async function () {
         const oneToken = {value: ethers.utils.parseEther("0.1")};
         
         // verify reserve minting now works (now 2 reserve tokens have been minted)
-        await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address);
+        await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1);
         expect(await this.botz.getReserveMintCount()).to.equal(2);
         
         await this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken);
-        expect(await this.botz.getPublicMintCount()).to.equal(1);
+        expect(await this.botz.totalSupply()).to.equal(3);
         
         await expect(this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken)).to.be.revertedWith("Public minting off");
 
@@ -135,11 +135,11 @@ describe('Minting control', async function () {
             const oneToken = {value: ethers.utils.parseEther("0.1")};
             
             // verify reserve minting now works (now 2 reserve tokens have been minted)
-            await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address);
+            await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1);
             expect(await this.botz.getReserveMintCount()).to.equal(3);
             
             await this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken);
-            expect(await this.botz.getPublicMintCount()).to.equal(2);
+            expect(await this.botz.totalSupply()).to.equal(5);
 
             await expect(this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken)).to.be.revertedWith("Whitelist minting off");
 
@@ -156,14 +156,14 @@ describe('Minting control', async function () {
         const oneToken = {value: ethers.utils.parseEther("0.1")};
 
          // verify reserve minting now works (now 2 reserve tokens have been minted)
-         await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(1, this.accounts[0].address);
+         await this.botz.connect(this.accounts[0]).mintReserveSchoolBotz(this.accounts[0].address, 1);
          expect(await this.botz.getReserveMintCount()).to.equal(4);
 
          await this.botz.connect(this.accounts[0]).mintSchoolBotz(1, oneToken);
-         expect(await this.botz.getPublicMintCount()).to.equal(3);
+         expect(await this.botz.totalSupply()).to.equal(7);
 
          await this.botz.connect(this.accounts[0]).mintFromWhitelist(1, this.proof1, oneToken);
-         expect(await this.botz.getPublicMintCount()).to.equal(4);
+         expect(await this.botz.totalSupply()).to.equal(8);
 
         await this.botz.connect(this.accounts[0]).flipWhitelistMintState();
         await this.botz.connect(this.accounts[0]).flipAllMintState();

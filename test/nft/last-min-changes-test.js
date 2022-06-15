@@ -30,6 +30,7 @@ describe('setPrice & no limit on mint', async function() {
         const hundredTokens = {value: ethers.utils.parseEther("5.5")}
         await this.botz.connect(this.accounts[5]).mintSchoolBotz(100, hundredTokens);
         expect(await this.botz.balanceOf(this.accounts[5].address)).to.equal(100);
+        expect(await this.botz.totalSupply()).to.equal(100);
     });
 
 });

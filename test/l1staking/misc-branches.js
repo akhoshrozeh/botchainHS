@@ -134,7 +134,7 @@ describe('Staking: branches', async function() {
         // mint nfts
         const fiveToken = {value: ethers.utils.parseEther("0.55")}
         await this.nft.connect(this.accounts[10]).mintSchoolBotz(5, fiveToken);
-        expect(await this.nft.getPublicMintCount()).to.equal(5);
+        expect(await this.nft.totalSupply()).to.equal(5);
         await this.nft.connect(this.accounts[10]).setApprovalForAll(this.staking.address, true);
 
         await expect(this.staking.connect(this.accounts[11]).stake([1], [1], [1], sig)).to.be.revertedWith("staker!=owner");
