@@ -14,6 +14,8 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     // should always be between [5456, 5556]
     uint256 private _currReserveID = 5456;
 
+    uint256 private _price = 0.055 ether;
+
     bytes32 public whitelistRoot = "";
 
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
@@ -176,7 +178,7 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
             "Invalid address"
         );
         require(
-            0.055 ether * numTokens <= msg.value,
+            _price * numTokens <= msg.value,
             "Invalid ether value sent."
         );
         require(
@@ -197,7 +199,7 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     }
 
     /**
-    @notice Mints up to 2 tokens, each cost 0.1 eth
+    @notice Mints up to 2 tokens, each cost 0.055 eth
     */
     function mintSchoolBotz(uint numTokens)
         external
@@ -205,9 +207,9 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
         publicMintOn
         allMintOn
     {
-        require(numTokens <= 10 && numTokens > 0, "Invalid no. of tokens");
+        require(numTokens > 0, "Invalid no. of tokens");
         require(numTokens + _currPublicID <= 5456, "Over token limit.");
-        require(0.055 ether * numTokens <= msg.value, "Invalid msg.value");
+        require(_price * numTokens <= msg.value, "Invalid msg.value");
 
 
 
@@ -246,6 +248,11 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
     function getPublicMintCount() public view returns (uint256) {
         return _currPublicID - 1;
     }
+
+    function getPrice() public view returns (uint256) {
+        return _price;
+    }
+    
 
     /**
     @return tokens of owned by 'usr'
@@ -287,6 +294,10 @@ contract NikyBotzPictureDay is ERC721Enumerable, AccessControl, Ownable {
             string(
                 abi.encodePacked(baseTokenURI(), Strings.toString(_tokenId))
             );
+    }
+
+    function setPrice(uint price) public onlyRole(MANAGER_ROLE) {
+        _price = price;
     }
 
     /**

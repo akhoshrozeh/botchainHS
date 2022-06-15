@@ -30,13 +30,13 @@ const infuraURL = process.env.INFURA_URL;
 module.exports = {
   solidity: "0.8.10",
 
-  networks: {
-    rinkeby: {
-      url: infuraURL,
-      accounts: [privKey]
-    }
-  }, 
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_KEY
-  }
+  // networks: {
+  //   rinkeby: {
+  //     url: infuraURL,
+  //     accounts: [privKey]
+  //   }
+  // }, 
+  // etherscan: {
+  //   apiKey: process.env.ETHERSCAN_KEY
+  // }
 };
