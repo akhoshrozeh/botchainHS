@@ -8,7 +8,9 @@ gnosis safe: 0xae9084189C042E2A64E7f95bCA7B50626a342f84
 (admin) is owner for all contracts except nft (gnosis multisig is): 0x652BBC3beC62FF7ef9157B73FcbDe0C1eb91b2a5
 
 CONTRACTS
-nft: 		0xAE6Ae53DB2d4253b47b0f97ee593e78587296369
+nft: 		0xa60E4CA8EC9AB91Cc06969cF2cBaFD496fB5C0B8
+
+# ignore these addresses below; not updated! 
 l1 botz: 	0x2523336837ee9a2582002B0dB51613c55CE24fba
 l2 botz: 	0xbbDE89Dee1519a71c496E97D6D4a8db071a65Af5
 staking: 	0xd81f5A20bCf4247F5f9548FF6664ec7d2318c972
