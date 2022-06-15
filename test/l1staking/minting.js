@@ -185,7 +185,7 @@ describe('Minting (Redeeming Rewards)', async function() {
         
         // verify erc20 balance
         // scale down 18 decimals
-        expect( (await this.botz.balanceOf(this.accounts[10].address)) / (10e18)).to.equal(totEarned);
+        expect( (await this.botz.balanceOf(this.accounts[10].address)) / (1e18)).to.equal(totEarned);
        
 
 
@@ -325,7 +325,7 @@ describe('Minting max', async function() {
         // scale down 18 decimals
     //    console.log('erc20 bal: ', await this.botz.balanceOf(this.accounts[10].address));
     //    console.log('erc20 bal div: ', await this.botz.balanceOf(this.accounts[10].address) / (10e18));
-        expect( (await this.botz.balanceOf(this.accounts[10].address)) / (10e18)).to.equal(950000000);
+        expect( (await this.botz.balanceOf(this.accounts[10].address)) / (1e18)).to.equal(950000000);
         // console.log( (await this.botz.balanceOf(this.accounts[10].address)) / (10e18));
 
         // earn some more rewards

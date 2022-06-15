@@ -277,7 +277,7 @@ contract PictureDayStaking is AccessControl, ERC721Holder, ReentrancyGuard {
         _rewards[msg.sender] = 0;
 
         // scale up to since decimals = 18 on erc20 contract
-        reward = reward * 10e18;
+        reward = reward * 1 ether;
 
         rewardsToken.mint(msg.sender, reward);
 

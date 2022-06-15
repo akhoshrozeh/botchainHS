@@ -8,10 +8,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Botz is ERC20, Ownable {
 
     // Cap is 950,000,000 
-    uint constant private _cap = 950000000 * (10e18);
+    uint constant private _cap = 950000000 * (1 ether);
 
     // testnet has 9500
-    // uint constant private _cap = 9500 * (10e18);
+    // uint constant private _cap = 9500 * (1 ether);
     // uint private immutable _cap;
 
     constructor()
