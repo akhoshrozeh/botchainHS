@@ -14,8 +14,8 @@ async function main() {
   // await hre.run('compile');
   const [deployer] = await ethers.getSigners(); //get the account to deploy the contract
 
-  const stakingToken = "0xAE6Ae53DB2d4253b47b0f97ee593e78587296369";
-  const rewardsToken = "0x2523336837ee9a2582002B0dB51613c55CE24fba";
+  const stakingToken = "0xa60E4CA8EC9AB91Cc06969cF2cBaFD496fB5C0B8";
+  const rewardsToken = "0x3f8d6215ecC16EB9A27BD92caD549D9C722477d2";
   const admin = "0x652BBC3beC62FF7ef9157B73FcbDe0C1eb91b2a5";
 
 
