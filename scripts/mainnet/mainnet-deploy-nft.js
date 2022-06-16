@@ -17,8 +17,8 @@ async function main() {
   const name = "SchoolBotz";
   const symbol = "NIKY";
   const baseUri = "https://base-uri-test.com/";
-  const multisig = "0xae9084189C042E2A64E7f95bCA7B50626a342f84";
-  const sysadmin = "0x652BBC3beC62FF7ef9157B73FcbDe0C1eb91b2a5";
+  const multisig = "0x6B1A77e8E277b2300cD8b1eC342C9d2cEd17688e";
+  const sysadmin = "0x83fB7063f84300696d5687525594a9aF49d1f017";
 
   console.log("Deploying contracts with the account:", deployer.address); 
   // We get the contract to deploy
