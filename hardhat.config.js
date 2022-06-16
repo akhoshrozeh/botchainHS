@@ -20,6 +20,7 @@ dotenv.config()
 
 const privKey = process.env.PRIV_KEY;
 const infuraURL = process.env.INFURA_URL;
+const mainnetURL = process.env.MAINNET_URL;
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -31,6 +32,10 @@ module.exports = {
   solidity: "0.8.10",
 
   networks: {
+    mainnet: {
+      url: mainnetURL, // or any other JSON-RPC provider
+      accounts: [privKey]
+    },
     rinkeby: {
       url: infuraURL,
       accounts: [privKey]

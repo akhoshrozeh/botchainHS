@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -11,6 +10,8 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
 
     uint256 private _price = 0.055 ether;
+
+    uint256 private _reserveMintCount;
 
     bytes32 public whitelistRoot = "";
 
@@ -24,8 +25,6 @@ contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
 
     string private _customBaseURI = "";
 
-    uint256 private _reserveMintCount;
-
     // Must be true for any minting to possibly occur
     bool private _allMintOn = false;
 
@@ -36,6 +35,7 @@ contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
     bool private _whitelistMintOn = false;
 
     bool private _provenanceHashSet = false;
+
 
     mapping(address => uint) private _hasMinted;
 
@@ -151,7 +151,7 @@ contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
     }
 
     /*
-    @notice Mints up to 2 tokens if msg.sender is on whitelist, each cost 0.08 eth
+    @notice Mints up to 2 tokens if msg.sender is on whitelist
     @dev See https://github.com/miguelmota/merkletreejs-solidity for how to construct 'proof' on client side
     @param proof This should be a merkle proof that verifies msg.sender is a part of the merkle root (whitelist root)
     */
@@ -184,7 +184,7 @@ contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
     }
 
     /**
-    @notice Mints up to 2 tokens, each cost 0.055 eth
+    @notice Mint any number of NFTs (within cap of 5555)
     */
     function mintSchoolBotz(uint numTokens)
         external
@@ -210,17 +210,24 @@ contract NikyBotzPictureDay is ERC721AQueryable, AccessControl, Ownable {
         require(sent, "Failed to send Ether");
     }
 
-
+    /**
+    @notice Starting NFT tokenId
+    */
     function _startTokenId() internal view override returns (uint256) {
         return 1;
     } 
 
 
-
+    /**
+    @notice Return price of 1 NFT
+    */
     function getPrice() public view returns (uint256) {
         return _price;
     }
 
+    /**
+    @return Number of mints from reserves
+    */
     function getReserveMintCount() public view returns (uint) {
         return _reserveMintCount;
     }
